@@ -74,6 +74,8 @@ DB_PASSWORD=masterkey
 ```
 
 ## Speed analisys with 2 million rows:
+12 Columns: (Index, Customer Id, First Name, Last Name, Company, City, Country, Phone 1, Phone 2, Email, Subscription Date, Website)
+
 Running on: Ubuntu Linux
 Dell Inc. OptiPlex 7010
 Intel® Core™ i7-3770S CPU @ 3.10GHz × 8
@@ -89,7 +91,7 @@ SSD
 ```2 minutes 51 seconds```
 
 ### Firebird
-``` ```
+```27 minutes 36 seconds```
 
 ## Make targets
 ```
