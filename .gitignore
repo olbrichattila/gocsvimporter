@@ -1,0 +1,5 @@
+database/
+.env
+customers.csv
+data.csv
+importcsv
