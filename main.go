@@ -82,6 +82,7 @@ func importer(app *application) {
 	batchIndex := 0
 	var batch [][]any
 	connectionName := app.store.dBConfig.GetConnectionName()
+	// TODO: Refactor this block, use early returns, merge ifs and extract logics.
 	for app.csv.Next() {
 		i++
 		percent := int(math.Ceil(float64(i) / float64(rowCount) * 100))

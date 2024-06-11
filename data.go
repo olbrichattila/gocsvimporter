@@ -126,7 +126,6 @@ func (s *dataStore) execute(query string, args ...any) error {
 }
 
 func (s *dataStore) createInsertSql() {
-
 	binding := s.dBConfig.GetBinding()
 	bindings := make([]string, len(s.fieldNames))
 	for i := range bindings {
@@ -153,6 +152,7 @@ func (s *dataStore) Insert(args ...any) error {
 }
 
 func (s *dataStore) BatchInsert(data [][]any) error {
+	// TODO: Refactor this, remove nested loop, extract logic
 	bindings := make([]string, len(data))
 	binding := make([]string, len(s.fieldNames))
 	bindingChar := s.dBConfig.GetBinding()
