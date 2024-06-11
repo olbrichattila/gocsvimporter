@@ -116,7 +116,7 @@ docker-compose up -d
 ## What is next
 - full code cleanup
 - tests
-- paralell SQL to inmpove speed
+- paralell SQL to improve speed
 
 
 
