@@ -115,6 +115,7 @@ docker-compose up -d
 
 ## What is next
 - full code cleanup
+- fix make lint suggestions
 - tests
 - paralell SQL to improve speed
 
