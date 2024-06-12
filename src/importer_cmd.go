@@ -1,4 +1,4 @@
-// package importer is a CSV importer supporting large CSV files
+// Package importer is a CSV importer supporting large CSV files
 package importer
 
 import (
@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Import process the file
 func Import() {
 	fmt.Println("Analising CSV...")
 	startTime := time.Now()

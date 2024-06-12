@@ -154,7 +154,7 @@ func (s *dataStore) createInsertSQL() {
 func (s *dataStore) insert(args ...any) error {
 	err := s.execute(s.insertSQL, args...)
 	if err != nil {
-		return s.getSqlError(err, s.insertSQL)
+		return s.getSQLError(err, s.insertSQL)
 	}
 
 	return nil
@@ -171,13 +171,13 @@ func (s *dataStore) batchInsert(data [][]any) error {
 
 	err := s.execute(insertSQL, pars...)
 	if err != nil {
-		return s.getSqlError(err, insertSQL)
+		return s.getSQLError(err, insertSQL)
 	}
 
 	return nil
 }
 
-func (s *dataStore) getSqlError(err error, insertSQL string) error {
+func (s *dataStore) getSQLError(err error, insertSQL string) error {
 	return fmt.Errorf("%s,\n%s", err.Error(), insertSQL)
 }
 

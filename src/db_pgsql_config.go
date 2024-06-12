@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	// This blank import is necessary to have the driver
 	_ "github.com/lib/pq"
 )
 
