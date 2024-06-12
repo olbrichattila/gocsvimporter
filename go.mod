@@ -1,4 +1,4 @@
-module example.com/importcsv
+module github.com/olbrichattila/gocsvimporter
 
 go 1.18
 
@@ -8,7 +8,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/nakagami/firebirdsql v0.9.10
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
@@ -25,5 +25,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/mathutil v1.4.2-0.20220822142738-b13e5b564332 // indirect
 )
-
-replace example.com/importcsv/src => ./src

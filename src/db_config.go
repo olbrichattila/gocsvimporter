@@ -1,4 +1,4 @@
-package main
+package importer
 
 type dBConfiger interface {
 	getConnectionName() string
