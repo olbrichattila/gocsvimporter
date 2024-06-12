@@ -15,7 +15,6 @@ func newPgsqlConfig() *pgsqlConfig {
 }
 
 func (c *pgsqlConfig) GetConnectionString() string {
-
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		os.Getenv("DB_USERNAME"),
