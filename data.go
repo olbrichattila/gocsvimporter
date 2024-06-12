@@ -19,16 +19,16 @@ type dataStore struct {
 	quote      string
 }
 
-func NewDataStore(dbName, tableName string) (*dataStore, error) {
+func NewDataStore(tableName string) (*dataStore, error) {
 	d := &dataStore{
 		tableName: tableName,
 	}
-	d.init(dbName)
+	d.init()
 
 	return d, nil
 }
 
-func (s *dataStore) init(dbName string) error {
+func (s *dataStore) init() error {
 	config, err := GetDbConnector()
 	if err != nil {
 		return err
@@ -50,9 +50,7 @@ func (s *dataStore) Close() {
 
 func (s *dataStore) Create(fieldNames CSVFields) error {
 	sql := s.createSql(fieldNames)
-	// fmt.Println(sql)
 	s.createInsertSql()
-
 	s.execute(s.dBConfig.GetDropTableString(s.tableName))
 
 	return s.execute(sql)
@@ -152,9 +150,25 @@ func (s *dataStore) Insert(args ...any) error {
 }
 
 func (s *dataStore) BatchInsert(data [][]any) error {
-	// TODO: Refactor this, remove nested loop, extract logic
-	bindings := make([]string, len(data))
-	binding := make([]string, len(s.fieldNames))
+	bindinStr := s.getBatchBindings(len(data), len(s.fieldNames))
+
+	insertSql := fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES %s", s.quote, s.tableName, s.quote, s.FieldNamesAsString(), bindinStr)
+	var pars []any
+	for _, val := range data {
+		pars = append(pars, val...)
+	}
+
+	err := s.execute(insertSql, pars...)
+	if err != nil {
+		return fmt.Errorf("%s,\n%s", err.Error(), insertSql)
+	}
+
+	return nil
+}
+
+func (s *dataStore) getBatchBindings(dataLen, fieldsLen int) string {
+	bindings := make([]string, dataLen)
+	binding := make([]string, fieldsLen)
 	bindingChar := s.dBConfig.GetBinding()
 
 	bindingPos := 0
@@ -170,18 +184,7 @@ func (s *dataStore) BatchInsert(data [][]any) error {
 		bindings[i] = fmt.Sprintf("(%s)", strings.Join(binding, ","))
 	}
 
-	insertSql := fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES %s", s.quote, s.tableName, s.quote, s.FieldNamesAsString(), strings.Join(bindings, ","))
-	var pars []any
-	for _, val := range data {
-		pars = append(pars, val...)
-	}
-
-	err := s.execute(insertSql, pars...)
-	if err != nil {
-		return fmt.Errorf("%s,\n%s", err.Error(), insertSql)
-	}
-
-	return nil
+	return strings.Join(bindings, ",")
 }
 
 func (s *dataStore) StartTransaction() error {

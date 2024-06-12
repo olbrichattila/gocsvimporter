@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+const (
+	batchSize = 100
+)
+
 type importing struct {
 	app        *application
 	progress   int
