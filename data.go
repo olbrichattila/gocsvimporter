@@ -9,7 +9,6 @@ import (
 	"unicode"
 )
 
-// TODO: Replae in app
 type dataStorer interface {
 	init(string) error
 	close()
