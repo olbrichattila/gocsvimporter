@@ -14,31 +14,31 @@ func newPgsqlConfig() *pgsqlConfig {
 	return &pgsqlConfig{}
 }
 
-func (c *pgsqlConfig) GetConnectionString() string {
+func (c *pgsqlConfig) getConnectionString() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		os.Getenv("DB_USERNAME"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_DATABASE"),
-		os.Getenv("DB_SSLMODE"),
+		os.Getenv(envdbUserName),
+		os.Getenv(envdbPassword),
+		os.Getenv(envdbHost),
+		os.Getenv(envdbPort),
+		os.Getenv(envdbDatabase),
+		os.Getenv(envdbSSLMode),
 	)
 }
 
-func (c *pgsqlConfig) GetConnectionName() string {
-	return "postgres"
+func (c *pgsqlConfig) getConnectionName() string {
+	return driverNamePostgres
 }
 
-func (c *pgsqlConfig) GetFieldQuote() string {
+func (c *pgsqlConfig) getFieldQuote() string {
 	return "\""
 }
 
-func (c *pgsqlConfig) GetBinding() string {
+func (c *pgsqlConfig) getBinding() string {
 	return "$"
 }
 
-func (c *pgsqlConfig) GetDropTableString(tableName string) string {
-	quote := c.GetFieldQuote()
-	return fmt.Sprintf("DROP TABLE IF EXISTS %s%s%s", quote, tableName, quote)
+func (c *pgsqlConfig) getDropTableString(tableName string) string {
+	quote := c.getFieldQuote()
+	return fmt.Sprintf(defaultDropTableFormat, quote, tableName, quote)
 }

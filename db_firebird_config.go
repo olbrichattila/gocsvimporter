@@ -14,31 +14,31 @@ func newFirebirdConfig() *firebirdConfig {
 	return &firebirdConfig{}
 }
 
-func (c *firebirdConfig) GetConnectionString() string {
+func (c *firebirdConfig) getConnectionString() string {
 	return fmt.Sprintf(
 		"%s:%s@%s:%s%s",
-		os.Getenv("DB_USERNAME"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_DATABASE"),
+		os.Getenv(envdbUserName),
+		os.Getenv(envdbPassword),
+		os.Getenv(envdbHost),
+		os.Getenv(envdbPort),
+		os.Getenv(envdbDatabase),
 	)
 }
 
-func (c *firebirdConfig) GetConnectionName() string {
-	return "firebirdsql"
+func (c *firebirdConfig) getConnectionName() string {
+	return driverNameFirebird
 }
 
-func (c *firebirdConfig) GetFieldQuote() string {
+func (c *firebirdConfig) getFieldQuote() string {
 	return "\""
 }
 
-func (c *firebirdConfig) GetBinding() string {
+func (c *firebirdConfig) getBinding() string {
 	return "?"
 }
 
-func (c *firebirdConfig) GetDropTableString(tableName string) string {
-	quote := c.GetFieldQuote()
+func (c *firebirdConfig) getDropTableString(tableName string) string {
+	quote := c.getFieldQuote()
 	return fmt.Sprintf(
 		`EXECUTE BLOCK AS
 			BEGIN

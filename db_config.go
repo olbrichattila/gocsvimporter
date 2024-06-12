@@ -1,9 +1,9 @@
 package main
 
-type DBConfiger interface {
-	GetConnectionName() string
-	GetConnectionString() string
-	GetFieldQuote() string
-	GetBinding() string
-	GetDropTableString(string) string
+type dBConfiger interface {
+	getConnectionName() string
+	getConnectionString() string
+	getFieldQuote() string
+	getBinding() string
+	getDropTableString(string) string
 }

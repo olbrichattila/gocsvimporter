@@ -1,3 +1,4 @@
+// Package main is a CSV importer supporting large CSV files
 package main
 
 import (
@@ -9,21 +10,22 @@ func main() {
 	fmt.Println("Analising CSV...")
 	startTime := time.Now()
 
-	fileName, tableName, separator, err := NewArgs().pharse()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	app, err := newApplication(
+		newArgParser(),
+		newEnv(),
+		newImporter(
+			newDataStore(),
+			newCsvReader(),
+		),
+	)
 
-	app, err := NewApplication(fileName, tableName, separator)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	analysisTime := time.Now()
-	importer := NewImporter(app)
-	err = importer.importCsv()
+	err = app.importer.importCsv()
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -10,14 +10,18 @@ const (
 	envFileName = "./.env"
 )
 
-func NewEnv() *env {
+type enver interface {
+	loadEnv() error
+}
+
+func newEnv() *env {
 	return &env{}
 }
 
 type env struct {
 }
 
-func (*env) LoadEnv() error {
+func (*env) loadEnv() error {
 	_, err := os.Stat(envFileName)
 	if err != nil {
 		if !os.IsNotExist(err) {

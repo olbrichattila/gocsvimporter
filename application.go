@@ -6,27 +6,37 @@ import (
 )
 
 type application struct {
-	csv   csvReader
-	store *dataStore
+	importer importer
 }
 
-func NewApplication(csvFile, tableName string, csvSeparator rune) (*application, error) {
-	env := NewEnv()
-	err := env.LoadEnv()
-	if err != nil {
-		return nil, err
-	}
-
+func newApplication(
+	args argParser,
+	env enver,
+	importer importer,
+) (*application, error) {
 	app := &application{}
-	app.csv, err = NewCsvReader(csvFile, csvSeparator)
+
+	csvFileName, tableName, separator, err := args.pharse()
 	if err != nil {
 		return nil, err
 	}
 
-	app.store, err = NewDataStore(tableName)
+	err = env.loadEnv()
 	if err != nil {
 		return nil, err
 	}
+
+	err = importer.getCsvReader().init(csvFileName, separator)
+	if err != nil {
+		return nil, err
+	}
+
+	err = importer.getStorer().init(tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	app.importer = importer
 
 	return app, nil
 }

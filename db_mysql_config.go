@@ -7,37 +7,37 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type mySqlConfig struct {
+type mySQLConfig struct {
 }
 
-func newMySqlConfig() *mySqlConfig {
-	return &mySqlConfig{}
+func newMySQLConfig() *mySQLConfig {
+	return &mySQLConfig{}
 }
 
-func (c *mySqlConfig) GetConnectionString() string {
+func (c *mySQLConfig) getConnectionString() string {
 	return fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s",
-		os.Getenv("DB_USERNAME"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_DATABASE"),
+		os.Getenv(envdbUserName),
+		os.Getenv(envdbPassword),
+		os.Getenv(envdbHost),
+		os.Getenv(envdbPort),
+		os.Getenv(envdbDatabase),
 	)
 }
 
-func (c *mySqlConfig) GetConnectionName() string {
-	return "mysql"
+func (c *mySQLConfig) getConnectionName() string {
+	return driverNameMySQL
 }
 
-func (c *mySqlConfig) GetFieldQuote() string {
+func (c *mySQLConfig) getFieldQuote() string {
 	return "`"
 }
 
-func (c *mySqlConfig) GetBinding() string {
+func (c *mySQLConfig) getBinding() string {
 	return "?"
 }
 
-func (c *mySqlConfig) GetDropTableString(tableName string) string {
-	quote := c.GetFieldQuote()
-	return fmt.Sprintf("DROP TABLE IF EXISTS %s%s%s", quote, tableName, quote)
+func (c *mySQLConfig) getDropTableString(tableName string) string {
+	quote := c.getFieldQuote()
+	return fmt.Sprintf(defaultDropTableFormat, quote, tableName, quote)
 }

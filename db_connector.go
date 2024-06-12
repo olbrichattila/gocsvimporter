@@ -8,14 +8,14 @@ import (
 
 type dbConnection struct {
 	db     *sql.DB
-	config DBConfiger
+	config dBConfiger
 }
 
-func NewDbConnection(config DBConfiger) (*sql.DB, error) {
+func newDbConnection(config dBConfiger) (*sql.DB, error) {
 	conn := &dbConnection{
 		config: config,
 	}
-	err := conn.Connect()
+	err := conn.connect()
 	if err != nil {
 		return nil, err
 	}
@@ -23,8 +23,8 @@ func NewDbConnection(config DBConfiger) (*sql.DB, error) {
 	return conn.db, nil
 }
 
-func (d *dbConnection) Connect() error {
-	db, err := sql.Open(d.config.GetConnectionName(), d.config.GetConnectionString())
+func (d *dbConnection) connect() error {
+	db, err := sql.Open(d.config.getConnectionName(), d.config.getConnectionString())
 	if err != nil {
 		return err
 	}

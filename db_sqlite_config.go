@@ -14,23 +14,23 @@ func newSqliteConfig() *sqLiteConfig {
 	return &sqLiteConfig{}
 }
 
-func (c *sqLiteConfig) GetConnectionString() string {
-	return os.Getenv("DB_DATABASE")
+func (c *sqLiteConfig) getConnectionString() string {
+	return os.Getenv(envdbDatabase)
 }
 
-func (c *sqLiteConfig) GetConnectionName() string {
-	return "sqlite3"
+func (c *sqLiteConfig) getConnectionName() string {
+	return driverNameSqLite
 }
 
-func (c *sqLiteConfig) GetFieldQuote() string {
+func (c *sqLiteConfig) getFieldQuote() string {
 	return "\""
 }
 
-func (c *sqLiteConfig) GetBinding() string {
+func (c *sqLiteConfig) getBinding() string {
 	return "?"
 }
 
-func (c *sqLiteConfig) GetDropTableString(tableName string) string {
-	quote := c.GetFieldQuote()
-	return fmt.Sprintf("DROP TABLE IF EXISTS %s%s%s", quote, tableName, quote)
+func (c *sqLiteConfig) getDropTableString(tableName string) string {
+	quote := c.getFieldQuote()
+	return fmt.Sprintf(defaultDropTableFormat, quote, tableName, quote)
 }

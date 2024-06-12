@@ -5,10 +5,14 @@ import (
 	"os"
 )
 
+type argParser interface {
+	pharse() (string, string, rune, error)
+}
+
 type parseArgs struct {
 }
 
-func NewArgs() *parseArgs {
+func newArgParser() *parseArgs {
 	return &parseArgs{}
 }
 

@@ -10,8 +10,15 @@ const (
 	batchSize = 100
 )
 
+type importer interface {
+	importCsv() error
+	getCsvReader() csvReader
+	getStorer() dataStorer
+}
+
 type importing struct {
-	app        *application
+	storer     dataStorer
+	csv        csvReader
 	progress   int
 	rowNr      int
 	rowCount   int
@@ -19,37 +26,50 @@ type importing struct {
 	batchIndex int
 }
 
-func NewImporter(app *application) *importing {
-	return &importing{app: app}
+func newImporter(storer dataStorer, csv csvReader) *importing {
+	return &importing{
+		storer: storer,
+		csv:    csv,
+	}
+}
+
+func (i *importing) getCsvReader() csvReader {
+	return i.csv
+}
+
+func (i *importing) getStorer() dataStorer {
+	return i.storer
 }
 
 func (i *importing) importCsv() error {
 	// TODO: Refactor this block, use early returns, merge ifs and extract logics.
 	defer func() {
-		i.app.store.Close()
-		i.app.csv.Close()
+		i.storer.close()
+		i.csv.close()
 	}()
 
-	headers := i.app.csv.Header()
+	headers := i.csv.header()
 	fmt.Printf("Found %d fields\n(%s)\n", len(headers), i.headerList(headers))
-	err := i.app.store.Create(i.app.csv.Header())
+	err := i.storer.create(i.csv.header())
 	if err != nil {
 		return err
 	}
 
-	err = i.app.store.StartTransaction()
+	err = i.storer.startTransaction()
 	if err != nil {
 		return err
 	}
-	defer i.app.store.CommitTransaction()
+	defer func() {
+		err = i.storer.commitTransaction()
+	}()
 
 	i.resetProgress()
-	connectionName := i.app.store.dBConfig.GetConnectionName()
+	connectionName := i.storer.dBConfig().getConnectionName()
 
-	for i.app.csv.Next() {
+	for i.csv.next() {
 		i.showProgress()
 		// Firebird does not seem to support batch insert?
-		if connectionName == "firebirdsql" {
+		if connectionName == driverNameFirebird {
 			err = i.insertSQL()
 			if err != nil {
 				return err
@@ -57,13 +77,19 @@ func (i *importing) importCsv() error {
 			continue
 		}
 
-		i.batchInsertSQL()
+		err := i.batchInsertSQL()
+		if err != nil {
+			return err
+		}
 	}
 
-	if len(i.batch) > 0 && connectionName != "firebirdsql" {
-		err = i.app.store.BatchInsert(i.batch)
+	if len(i.batch) > 0 && connectionName != driverNameFirebird {
+		err = i.storer.batchInsert(i.batch)
 		if err != nil {
-			i.app.store.RollbackTransaction()
+			rollbackErr := i.storer.rollbackTransaction()
+			if rollbackErr != nil {
+				return rollbackErr
+			}
 			return err
 		}
 	}
@@ -71,7 +97,7 @@ func (i *importing) importCsv() error {
 	return nil
 }
 
-func (i *importing) headerList(headers CSVFields) string {
+func (i *importing) headerList(headers cSVFields) string {
 	fields := make([]string, len(headers))
 	for i, f := range headers {
 		fields[i] = f.Name
@@ -83,7 +109,7 @@ func (i *importing) headerList(headers CSVFields) string {
 func (i *importing) resetProgress() {
 	i.rowNr = 0
 	i.progress = 0
-	i.rowCount = i.app.csv.RowCount()
+	i.rowCount = i.csv.rowCount()
 	i.batchIndex = 0
 }
 
@@ -97,21 +123,27 @@ func (i *importing) showProgress() {
 }
 
 func (i *importing) insertSQL() error {
-	err := i.app.store.Insert(i.app.csv.Row()...)
+	err := i.storer.insert(i.csv.row()...)
 	if err != nil {
-		i.app.store.RollbackTransaction()
+		rollbackErr := i.storer.rollbackTransaction()
+		if rollbackErr != nil {
+			return rollbackErr
+		}
 		return err
 	}
 	return nil
 }
 
 func (i *importing) batchInsertSQL() error {
-	i.batch = append(i.batch, i.app.csv.Row())
+	i.batch = append(i.batch, i.csv.row())
 	if i.batchIndex == batchSize {
 		i.batchIndex = 0
-		err := i.app.store.BatchInsert(i.batch)
+		err := i.storer.batchInsert(i.batch)
 		if err != nil {
-			i.app.store.RollbackTransaction()
+			rollbackErr := i.storer.rollbackTransaction()
+			if rollbackErr != nil {
+				return rollbackErr
+			}
 			return err
 		}
 		i.batch = nil
