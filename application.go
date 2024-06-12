@@ -6,7 +6,7 @@ import (
 )
 
 type application struct {
-	csv   *readCsv
+	csv   csvReader
 	store *dataStore
 }
 

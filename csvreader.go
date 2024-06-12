@@ -14,6 +14,14 @@ func NewCsvReader(fileName string, spearator rune) (*readCsv, error) {
 	return c, nil
 }
 
+type csvReader interface {
+	Header() CSVFields
+	Next() bool
+	Row() []any
+	RowCount() int
+	Close()
+}
+
 type CSVField struct {
 	Name string
 	Type string
@@ -29,6 +37,55 @@ type readCsv struct {
 	types    []string
 	row      []any
 	rowCount int
+}
+
+func (r *readCsv) Header() CSVFields {
+	fields := make(CSVFields, len(r.header))
+	for i, fieldName := range r.header {
+		fields[i].Name = fieldName
+		fields[i].Type = r.constructType(r.types[i], r.lengths[i])
+	}
+
+	return fields
+}
+
+func (r *readCsv) Next() bool {
+	r.row = nil
+	record, err := r.reader.Read()
+	if err == io.EOF {
+		return false
+	}
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	for _, v := range record {
+		r.row = append(r.row, v)
+	}
+
+	return true
+}
+
+func (r *readCsv) Row() []any {
+	rowsWithNil := make([]any, len(r.row))
+	for i, v := range r.row {
+		if r.row[i] == "" {
+			rowsWithNil[i] = nil
+		} else {
+			rowsWithNil[i] = v
+		}
+	}
+	return rowsWithNil
+}
+
+func (r *readCsv) RowCount() int {
+	return r.rowCount
+}
+
+func (r *readCsv) Close() {
+	r.file.Close()
 }
 
 func (r *readCsv) init(f string, c rune) error {
@@ -117,61 +174,12 @@ func (r *readCsv) constructFieldType(fieldContent, lastConstructedFieldType stri
 	return currentRowType
 }
 
-func (r *readCsv) Next() bool {
-	r.row = nil
-	record, err := r.reader.Read()
-	if err == io.EOF {
-		return false
-	}
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
-
-	for _, v := range record {
-		r.row = append(r.row, v)
-	}
-
-	return true
-}
-
-func (r *readCsv) Close() {
-	r.file.Close()
-}
-
-func (r *readCsv) Header() CSVFields {
-	fields := make(CSVFields, len(r.header))
-	for i, fieldName := range r.header {
-		fields[i].Name = fieldName
-		fields[i].Type = r.constructType(r.types[i], r.lengths[i])
-	}
-
-	return fields
-}
-
 func (r *readCsv) constructType(fieldType string, length int) string {
 	if fieldType == "VARCHAR" {
 		return "VARCHAR(" + strconv.Itoa(length) + ")"
 	}
 
 	return fieldType
-}
-
-func (r *readCsv) Row() []any {
-	rowsWithNil := make([]any, len(r.row))
-	for i, v := range r.row {
-		if r.row[i] == "" {
-			rowsWithNil[i] = nil
-		} else {
-			rowsWithNil[i] = v
-		}
-	}
-	return rowsWithNil
-}
-
-func (r *readCsv) RowCount() int {
-	return r.rowCount
 }
 
 func (r *readCsv) isInt(s string) bool {

@@ -9,6 +9,10 @@ import (
 	"unicode"
 )
 
+// TODO: Replae in app
+type dataStorer interface {
+}
+
 type dataStore struct {
 	dBConfig   DBConfiger
 	db         *sql.DB
