@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -20,15 +18,16 @@ type application struct {
 }
 
 func main() {
+	// TODO: Refactoring, simpify, extract
 	err := loadEnv()
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 
 	fileName, tableName, separator, err := pharseArgs()
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 	fmt.Println("Analising CSV...")
@@ -41,10 +40,14 @@ func main() {
 	}
 
 	analysisTime := time.Now()
-	importer(app)
+	importer := NewImporter(app)
+	err = importer.importCsv()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	finisedTime := time.Now()
-
 	fullAnalysisTime := durasionAsString(analysisTime.Sub(startTime).Seconds())
 	fullDurationTime := durasionAsString(finisedTime.Sub(analysisTime).Seconds())
 	totalTime := durasionAsString(finisedTime.Sub(startTime).Seconds())
@@ -54,75 +57,6 @@ func main() {
 
 func durasionAsString(elapsed float64) string {
 	return fmt.Sprintf("%.0f minutes %d seconds", elapsed/60, int64(elapsed)%60)
-}
-
-func importer(app *application) {
-	defer func() {
-		app.store.Close()
-		app.csv.Close()
-	}()
-
-	headers := app.csv.Header()
-	fmt.Printf("Found %d fields\n(%s)\n", len(headers), headerList(headers))
-	err := app.store.Create(app.csv.Header())
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	err = app.store.StartTransaction()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer app.store.CommitTransaction()
-
-	i := 0
-	progress := 0
-	rowCount := app.csv.RowCount()
-	batchIndex := 0
-	var batch [][]any
-	connectionName := app.store.dBConfig.GetConnectionName()
-	// TODO: Refactor this block, use early returns, merge ifs and extract logics.
-	for app.csv.Next() {
-		i++
-		percent := int(math.Ceil(float64(i) / float64(rowCount) * 100))
-		if percent != progress {
-			progress = percent
-			fmt.Printf("\rImporting: %d%%", progress)
-		}
-
-		// Firebird does not seem to support batch insert?
-		if connectionName == "firebirdsql" {
-			err = app.store.Insert(app.csv.Row()...)
-			if err != nil {
-				fmt.Println(err)
-				app.store.RollbackTransaction()
-				break
-			}
-		} else {
-			batch = append(batch, app.csv.Row())
-			if batchIndex == batchSize {
-				batchIndex = 0
-				err = app.store.BatchInsert(batch)
-				if err != nil {
-					fmt.Println(err)
-					app.store.RollbackTransaction()
-					break
-				}
-				batch = nil
-			} else {
-				batchIndex++
-			}
-		}
-	}
-
-	if len(batch) > 0 && connectionName != "firebirdsql" {
-		err = app.store.BatchInsert(batch)
-		if err != nil {
-			fmt.Println(err)
-			app.store.RollbackTransaction()
-		}
-	}
 }
 
 func NewApplication(csvFile, dbFile, tableName string, csvSeparator rune) (*application, error) {
@@ -159,15 +93,6 @@ func pharseArgs() (string, string, rune, error) {
 	tableName := os.Args[2]
 
 	return fileName, tableName, separator, nil
-}
-
-func headerList(headers CSVFields) string {
-	fields := make([]string, len(headers))
-	for i, f := range headers {
-		fields[i] = f.Name
-	}
-
-	return strings.Join(fields, ", ")
 }
 
 func fileExists(filename string) bool {
