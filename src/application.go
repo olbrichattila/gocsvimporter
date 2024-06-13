@@ -2,6 +2,7 @@ package importer
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -42,14 +43,23 @@ func newApplication(
 }
 
 func (a *application) displayTimeStat(startTime, analysisTime time.Time) {
-	finisedTime := time.Now()
-	fullAnalysisTime := a.durasionAsString(analysisTime.Sub(startTime).Seconds())
-	fullDurationTime := a.durasionAsString(finisedTime.Sub(analysisTime).Seconds())
-	totalTime := a.durasionAsString(finisedTime.Sub(startTime).Seconds())
+	// Record the finished time
+	finishedTime := time.Now()
 
+	// Calculate the durations
+	fullAnalysisDuration := analysisTime.Sub(startTime).Seconds()
+	fullDurationDuration := finishedTime.Sub(analysisTime).Seconds()
+	totalDuration := finishedTime.Sub(startTime).Seconds()
+
+	// Convert durations to string representations
+	fullAnalysisTime := a.durationAsString(fullAnalysisDuration)
+	fullDurationTime := a.durationAsString(fullDurationDuration)
+	totalTime := a.durationAsString(totalDuration)
+
+	// Print the results
 	fmt.Printf("\nDone\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n", fullAnalysisTime, fullDurationTime, totalTime)
 }
 
-func (application) durasionAsString(elapsed float64) string {
-	return fmt.Sprintf("%.0f minutes %d seconds", elapsed/60, int64(elapsed)%60)
+func (application) durationAsString(elapsed float64) string {
+	return fmt.Sprintf("%.0f minutes %d seconds", math.Floor(elapsed/60), int64(elapsed)%60)
 }
