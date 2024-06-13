@@ -32,5 +32,6 @@ func Import() {
 		return
 	}
 
+	// TODO: tests stats, time may not be correctly dispayed
 	app.displayTimeStat(startTime, analysisTime)
 }

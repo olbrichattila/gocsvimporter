@@ -55,7 +55,7 @@ func (t *integrationTestSuite) TearDownTest() {
 	// TODO
 }
 
-func (t *integrationTestSuite) TestMissingArgsReturnsError() {
+func (t *integrationTestSuite) TestImportsCorrectly() {
 	err := t.app.importer.importCsv()
 	t.NoError(err)
 
@@ -66,11 +66,14 @@ func (t *integrationTestSuite) TestMissingArgsReturnsError() {
 	t.NoError(err)
 	defer db.Close()
 
+	// Act
 	fieldNames, err := t.fieldNames(db)
 	t.NoError(err)
 
+	// Assert correct amount of fields created
 	t.Len(fieldNames, 4)
 
+	// Assert fields and their type correctly determinded
 	t.Equal("fieldvarchar", fieldNames[0].name)
 	t.Equal("VARCHAR(15)", fieldNames[0].ctype)
 
@@ -83,11 +86,12 @@ func (t *integrationTestSuite) TestMissingArgsReturnsError() {
 	t.Equal("fieldbool", fieldNames[3].name)
 	t.Equal("TINYINT(1)", fieldNames[3].ctype)
 
+	// Act
 	rows, err := t.fetcAll(db)
 	t.NoError(err)
 	t.Len(rows, 4)
 
-	// TODO: assert all lines
+	// Assert the impored data is identical with CSV
 	t.Equal("1", rows[0].fieldvarchar)
 	t.Equal(1, rows[0].fieldint)
 	t.Equal(1.0, rows[0].fieldfloat)

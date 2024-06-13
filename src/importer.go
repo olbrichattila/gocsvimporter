@@ -42,7 +42,6 @@ func (i *importing) getStorer() dataStorer {
 }
 
 func (i *importing) importCsv() error {
-	// TODO: Refactor this block, use early returns, merge ifs and extract logics.
 	defer func() {
 		i.storer.close()
 		i.csv.close()
