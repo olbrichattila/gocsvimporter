@@ -7,22 +7,32 @@ import (
 )
 
 const (
-	envFileName = "./.env"
+	envFileName     = "./.env"
+	envdbConnection = "DB_CONNECTION"
+	envdbUserName   = "DB_USERNAME"
+	envdbPassword   = "DB_PASSWORD"
+	envdbHost       = "DB_HOST"
+	envdbPort       = "DB_PORT"
+	envdbDatabase   = "DB_DATABASE"
+	envdbSSLMode    = "DB_SSLMODE"
 )
+
+const ()
 
 type enver interface {
 	loadEnv() error
 }
 
-func newEnv() *env {
-	return &env{}
+func newEnv(fileName string) *env {
+	return &env{fileName: fileName}
 }
 
 type env struct {
+	fileName string
 }
 
-func (*env) loadEnv() error {
-	_, err := os.Stat(envFileName)
+func (e *env) loadEnv() error {
+	_, err := os.Stat(e.fileName)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil
@@ -31,5 +41,5 @@ func (*env) loadEnv() error {
 		return err
 	}
 
-	return godotenv.Load()
+	return godotenv.Load(e.fileName)
 }

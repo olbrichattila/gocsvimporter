@@ -13,7 +13,7 @@ func Import() {
 
 	app, err := newApplication(
 		newArgParser(),
-		newEnv(),
+		newEnv(envFileName),
 		newImporter(
 			newDataStore(),
 			newCsvReader(),

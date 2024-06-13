@@ -6,13 +6,6 @@ import (
 )
 
 const (
-	envdbConnection        = "DB_CONNECTION"
-	envdbUserName          = "DB_USERNAME"
-	envdbPassword          = "DB_PASSWORD"
-	envdbHost              = "DB_HOST"
-	envdbPort              = "DB_PORT"
-	envdbDatabase          = "DB_DATABASE"
-	envdbSSLMode           = "DB_SSLMODE"
 	defaultDropTableFormat = "DROP TABLE IF EXISTS %s%s%s"
 	driverNameFirebird     = "firebirdsql"
 	driverNameSqLite       = "sqlite3"

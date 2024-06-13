@@ -14,14 +14,6 @@ func TestDbConnectorRunner(t *testing.T) {
 	suite.Run(t, new(dbConnectorTestSuite))
 }
 
-func (t *dbConnectorTestSuite) SetupTest() {
-	// TODO
-}
-
-func (t *dbConnectorTestSuite) TearDownTest() {
-	// TODO
-}
-
 func (t *dbConnectorTestSuite) TestConnectToMemoryDatabase() {
 	dBConfig := newMockDBConfig()
 
