@@ -3,6 +3,7 @@ package importer
 import (
 	"database/sql"
 
+	// This is required to work, vscode auto removes it
 	_ "github.com/mattn/go-sqlite3"
 )
 

@@ -19,6 +19,7 @@ type dataStorer interface {
 	rollbackTransaction() error
 	insert(...any) error
 	dBConfig() dBConfiger
+	getConnection() *sql.DB
 }
 
 type dataStore struct {
@@ -50,6 +51,10 @@ func (s *dataStore) init(tableName string) error {
 	}
 	s.db = db
 	return nil
+}
+
+func (s *dataStore) getConnection() *sql.DB {
+	return s.db
 }
 
 func (s *dataStore) dBConfig() dBConfiger {

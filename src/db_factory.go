@@ -11,20 +11,28 @@ const (
 	driverNameSqLite       = "sqlite3"
 	driverNameMySQL        = "mysql"
 	driverNamePostgres     = "postgres"
+
+	dbConnectionTypeSqLite   = "sqlite"
+	dbConnectionTypeMySQL    = "mysql"
+	dbConnectionTypePgSQL    = "pgsql"
+	dbConnectionTypeFirebird = "firebird"
+	dbConnectionTypeMemory   = "memory"
 )
 
 func getDbConnector() (dBConfiger, error) {
 	dbConnection := os.Getenv(envdbConnection)
 
 	switch dbConnection {
-	case "sqlite":
+	case dbConnectionTypeSqLite:
 		return newSqliteConfig(), nil
-	case "mysql":
+	case dbConnectionTypeMySQL:
 		return newMySQLConfig(), nil
-	case "pgsql":
+	case dbConnectionTypePgSQL:
 		return newPgsqlConfig(), nil
-	case "firebird":
+	case dbConnectionTypeFirebird:
 		return newFirebirdConfig(), nil
+	case dbConnectionTypeMemory:
+		return newMemoryDBConfig(), nil
 	default:
 		return nil, fmt.Errorf("invalid DB_CONNECTION %s", dbConnection)
 	}

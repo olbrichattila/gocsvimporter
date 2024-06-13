@@ -15,7 +15,7 @@ func TestDbConnectorRunner(t *testing.T) {
 }
 
 func (t *dbConnectorTestSuite) TestConnectToMemoryDatabase() {
-	dBConfig := newMockDBConfig()
+	dBConfig := newMemoryDBConfig()
 
 	conn, err := newDbConnection(dBConfig)
 

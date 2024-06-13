@@ -5,7 +5,7 @@ import "fmt"
 type dBConfigerMock struct {
 }
 
-func newMockDBConfig() *dBConfigerMock {
+func newMemoryDBConfig() *dBConfigerMock {
 	return &dBConfigerMock{}
 }
 
