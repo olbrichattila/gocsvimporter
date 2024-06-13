@@ -116,3 +116,21 @@ docker-compose up -d
 ## What is next
 - paralell SQL to improve speed
 
+## TODO: Notes
+
+The Paralell SQL solution was prototyped, No improvement shown for MySql, not working for SqLite, not tested with Firebird
+Postgres - improvement to about 1 minute 29 sec,  almost double speed.
+
+The theory, is that the batches are sent in separate paralell connections to the database. SQLite as a local DB cannot work like that.
+
+It was tested with 10, 20 paralell threads.
+
+For the solution to properly implement:
+Need further code separation
+
+Factor out to a separate reusable struct:
+    SQL generator (generates Insert SQL, Create SQL ... need to be able accesible separately)
+    Separate out all database operations, as each connection needs a new local *sql.DB instance created in the go routine
+    Create (another branc already contains) a sync.Mutex locker, and wait for (x) threads and block
+    
+ 
