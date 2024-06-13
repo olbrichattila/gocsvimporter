@@ -156,7 +156,7 @@ func (r *readCsv) fillLengths() error {
 
 func (r *readCsv) constructTypeAndLengths(lengths []int, types []string) ([]int, []string) {
 	for i, v := range r.row() {
-		st := fmt.Sprintf("%v", v)
+		st := v.(string)
 		stLn := len(st)
 		if lengths[i] < stLn {
 			lengths[i] = stLn
