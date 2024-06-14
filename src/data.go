@@ -6,12 +6,12 @@ import (
 )
 
 type dataStorer interface {
-	init(string) error
+	init(dBConfiger, string) error
 	close()
 	create(cSVFields) error
 	startTransaction() error
 	commitTransaction() error
-	batchInsert([][]any) error
+	batchInsert([][]any, bool) error
 	rollbackTransaction() error
 	insert(...any) error
 	dBConfig() dBConfiger
@@ -23,28 +23,20 @@ type dataStore struct {
 	sQLGenerator   sQLGenerator
 	db             *sql.DB
 	tx             *sql.Tx
-	tableName      string
 	insertSQL      string
-	quote          string
 }
 
 func newDataStore() *dataStore {
 	return &dataStore{}
 }
 
-func (s *dataStore) init(tableName string) error {
-	s.tableName = tableName
-	config, err := getDbConnector()
-	if err != nil {
-		return err
-	}
+func (s *dataStore) init(dbConfig dBConfiger, tableName string) error {
+	s.databaseConfig = dbConfig
 
 	// TODO: Shoud those new statements come with DI?
-	s.sQLGenerator = newSQLGenerator(config, tableName)
-	s.databaseConfig = config
-	s.quote = config.getFieldQuote()
+	s.sQLGenerator = newSQLGenerator(dbConfig, tableName)
 
-	db, err := newDbConnection(config)
+	db, err := newDbConnection(dbConfig)
 	if err != nil {
 		return err
 	}
@@ -105,8 +97,8 @@ func (s *dataStore) insert(args ...any) error {
 	return nil
 }
 
-func (s *dataStore) batchInsert(data [][]any) error {
-	insertSQL, pars := s.sQLGenerator.createBatchInsertSQL(data)
+func (s *dataStore) batchInsert(data [][]any, isFullBatch bool) error {
+	insertSQL, pars := s.sQLGenerator.createBatchInsertSQL(data, isFullBatch)
 	err := s.execute(insertSQL, pars...)
 	if err != nil {
 		return s.getSQLError(err, insertSQL)

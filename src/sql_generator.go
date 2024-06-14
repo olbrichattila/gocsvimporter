@@ -9,10 +9,10 @@ import (
 )
 
 type sQLGenerator interface {
-	ceateTableSQL(fieldNames cSVFields) string
+	ceateTableSQL(cSVFields) string
 	getDropTableSQL() string
 	createInsertSQL() string
-	createBatchInsertSQL(data [][]any) (string, []any)
+	createBatchInsertSQL([][]any, bool) (string, []any)
 }
 
 type sQLgen struct {
@@ -20,6 +20,8 @@ type sQLgen struct {
 	bindingChar          string
 	tableName            string
 	quote                string
+	cachedBatchInsertSQL string
+	batchInsertSQLCached bool
 	normalisedFieldNames []string
 	fieldCount           int
 }
@@ -62,13 +64,21 @@ func (g *sQLgen) createInsertSQL() string {
 	return fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES (%s)", g.quote, g.tableName, g.quote, g.fieldNamesAsString(), bindingStr)
 }
 
-func (g *sQLgen) createBatchInsertSQL(data [][]any) (string, []any) {
-	bindinStr := g.getBatchBindings(len(data), g.fieldCount)
-
-	insertSQL := fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES %s", g.quote, g.tableName, g.quote, g.fieldNamesAsString(), bindinStr)
+func (g *sQLgen) createBatchInsertSQL(data [][]any, isfullBatch bool) (string, []any) {
 	var pars []any
 	for _, val := range data {
 		pars = append(pars, val...)
+	}
+	if isfullBatch && g.batchInsertSQLCached {
+		return g.cachedBatchInsertSQL, pars
+	}
+
+	bindinStr := g.getBatchBindings(len(data), g.fieldCount)
+	insertSQL := fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES %s", g.quote, g.tableName, g.quote, g.fieldNamesAsString(), bindinStr)
+
+	if isfullBatch {
+		g.cachedBatchInsertSQL = insertSQL
+		g.batchInsertSQLCached = true
 	}
 
 	return insertSQL, pars
