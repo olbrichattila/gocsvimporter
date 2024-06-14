@@ -156,13 +156,15 @@ func (r *readCsv) fillLengths() error {
 
 func (r *readCsv) constructTypeAndLengths(lengths []int, types []string) ([]int, []string) {
 	for i, v := range r.row() {
-		st := v.(string)
-		stLn := len(st)
-		if lengths[i] < stLn {
-			lengths[i] = stLn
-		}
+		if v != nil {
+			st := v.(string)
+			stLn := len(st)
+			if lengths[i] < stLn {
+				lengths[i] = stLn
+			}
 
-		types[i] = r.constructFieldType(st, types[i])
+			types[i] = r.constructFieldType(st, types[i])
+		}
 	}
 
 	return lengths, types
