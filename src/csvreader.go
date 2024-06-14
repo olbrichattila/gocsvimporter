@@ -9,11 +9,18 @@ import (
 )
 
 const (
-	dbFieldBoolean = "TINYINT(1)"
-	dbFieldInt     = "INT"
-	dbFieldFloat   = "FLOAT"
-	dbFieldText    = "VARCHAR"
+	dbFieldText    = 4
+	dbFieldFloat   = 3
+	dbFieldInt     = 2
+	dbFieldBoolean = 1
 )
+
+var dbFieldMap = map[int]string{
+	1: "TINYINT(1)",
+	2: "INT",
+	3: "FLOAT",
+	4: "VARCHAR",
+}
 
 func newCsvReader() *readCsv {
 	return &readCsv{}
@@ -39,14 +46,15 @@ type readCsv struct {
 	file          *os.File
 	reader        *csv.Reader
 	headers       []string
+	headerLen     int
 	lengths       []int
-	types         []string
+	types         []int
 	fields        []any
 	totalRowCount int
 }
 
 func (r *readCsv) header() cSVFields {
-	fields := make(cSVFields, len(r.headers))
+	fields := make(cSVFields, r.headerLen)
 	for i, fieldName := range r.headers {
 		fields[i].Name = fieldName
 		fields[i].Type = r.constructType(r.types[i], r.lengths[i])
@@ -121,6 +129,7 @@ func (r *readCsv) setHeader() error {
 	}
 
 	r.headers = record
+	r.headerLen = len(record)
 
 	err = r.fillLengths()
 	if err != nil {
@@ -131,9 +140,8 @@ func (r *readCsv) setHeader() error {
 }
 
 func (r *readCsv) fillLengths() error {
-	headerLen := len(r.headers)
-	lengths := make([]int, headerLen)
-	types := make([]string, headerLen)
+	lengths := make([]int, r.headerLen)
+	types := make([]int, r.headerLen)
 
 	r.totalRowCount = 0
 	for r.next() {
@@ -154,41 +162,37 @@ func (r *readCsv) fillLengths() error {
 	return nil
 }
 
-func (r *readCsv) constructTypeAndLengths(lengths []int, types []string) ([]int, []string) {
+func (r *readCsv) constructTypeAndLengths(lengths []int, types []int) ([]int, []int) {
 	for i, v := range r.row() {
-		st := fmt.Sprintf("%v", v)
-		stLn := len(st)
-		if lengths[i] < stLn {
-			lengths[i] = stLn
-		}
+		if v != nil {
+			st := v.(string)
+			stLn := len(st)
+			if lengths[i] < stLn {
+				lengths[i] = stLn
+			}
 
-		types[i] = r.constructFieldType(st, types[i])
+			types[i] = r.constructFieldType(st, types[i])
+		}
 	}
 
 	return lengths, types
 }
 
-func (r *readCsv) constructFieldType(fieldContent, lastConstructedFieldType string) string {
-	currentRowType := r.getType(fieldContent)
-	if currentRowType == dbFieldText ||
-		(currentRowType == dbFieldFloat && lastConstructedFieldType != dbFieldText) ||
-		(currentRowType == dbFieldInt && lastConstructedFieldType != dbFieldFloat && lastConstructedFieldType != dbFieldText) {
-		return currentRowType
+func (r *readCsv) constructFieldType(fieldContent string, lastConstructedFieldType int) int {
+	currentType := r.getType(fieldContent)
+	if currentType > lastConstructedFieldType {
+		return currentType
 	}
 
-	if lastConstructedFieldType == dbFieldInt {
-		return lastConstructedFieldType
-	}
-
-	return currentRowType
+	return lastConstructedFieldType
 }
 
-func (r *readCsv) constructType(fieldType string, length int) string {
+func (r *readCsv) constructType(fieldType int, length int) string {
 	if fieldType == dbFieldText {
 		return "VARCHAR(" + strconv.Itoa(length) + ")"
 	}
 
-	return fieldType
+	return dbFieldMap[fieldType]
 }
 
 func (r *readCsv) isInt(s string) bool {
@@ -205,7 +209,7 @@ func (r *readCsv) isBool(s string) bool {
 	return s == "0" || s == "1"
 }
 
-func (r *readCsv) getType(s string) string {
+func (r *readCsv) getType(s string) int {
 	if r.isBool(s) {
 		return dbFieldBoolean
 	}

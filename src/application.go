@@ -13,6 +13,7 @@ type application struct {
 func newApplication(
 	args argParser,
 	env enver,
+	connector dBConnector,
 	importer importer,
 ) (*application, error) {
 	app := &application{}
@@ -27,12 +28,17 @@ func newApplication(
 		return nil, err
 	}
 
+	err = connector.init()
+	if err != nil {
+		return nil, err
+	}
+
 	err = importer.getCsvReader().init(csvFileName, separator)
 	if err != nil {
 		return nil, err
 	}
 
-	err = importer.getStorer().init(tableName)
+	err = importer.getStorer().init(connector.getDBConfig(), tableName)
 	if err != nil {
 		return nil, err
 	}

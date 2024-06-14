@@ -42,6 +42,7 @@ func (t *integrationTestSuite) SetupTest() {
 	app, err := newApplication(
 		newMockParser(),
 		newEnvMock(),
+		newDbConnector(),
 		newImporter(
 			newDataStore(),
 			newCsvReader(),
@@ -49,10 +50,6 @@ func (t *integrationTestSuite) SetupTest() {
 	)
 	t.NoError(err)
 	t.app = app
-}
-
-func (t *integrationTestSuite) TearDownTest() {
-	// TODO
 }
 
 func (t *integrationTestSuite) TestImportsCorrectly() {
@@ -114,12 +111,13 @@ func (t *integrationTestSuite) TestImportsCorrectly() {
 }
 
 func (t *integrationTestSuite) reConnect() (*sql.DB, error) {
-	connector, err := getDbConnector()
+	connector := newDbConnector()
+	err := connector.init()
 	if err != nil {
 		return nil, err
 	}
 
-	return newDbConnection(connector)
+	return newDbConnection(connector.getDBConfig())
 }
 
 func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error) {

@@ -19,21 +19,43 @@ const (
 	dbConnectionTypeMemory   = "memory"
 )
 
-func getDbConnector() (dBConfiger, error) {
+func newDbConnector() *connector {
+	return &connector{}
+}
+
+type dBConnector interface {
+	init() error
+	getDBConfig() dBConfiger
+}
+
+type connector struct {
+	config dBConfiger
+}
+
+func (c *connector) init() error {
 	dbConnection := os.Getenv(envdbConnection)
 
 	switch dbConnection {
 	case dbConnectionTypeSqLite:
-		return newSqliteConfig(), nil
+		c.config = newSqliteConfig()
+		return nil
 	case dbConnectionTypeMySQL:
-		return newMySQLConfig(), nil
+		c.config = newMySQLConfig()
+		return nil
 	case dbConnectionTypePgSQL:
-		return newPgsqlConfig(), nil
+		c.config = newPgsqlConfig()
+		return nil
 	case dbConnectionTypeFirebird:
-		return newFirebirdConfig(), nil
+		c.config = newFirebirdConfig()
+		return nil
 	case dbConnectionTypeMemory:
-		return newMemoryDBConfig(), nil
+		c.config = newMemoryDBConfig()
+		return nil
 	default:
-		return nil, fmt.Errorf("invalid DB_CONNECTION %s", dbConnection)
+		return fmt.Errorf("invalid DB_CONNECTION %s", dbConnection)
 	}
+}
+
+func (c connector) getDBConfig() dBConfiger {
+	return c.config
 }

@@ -27,6 +27,7 @@ type importing struct {
 }
 
 func newImporter(storer dataStorer, csv csvReader) *importing {
+
 	return &importing{
 		storer: storer,
 		csv:    csv,
@@ -83,7 +84,7 @@ func (i *importing) importCsv() error {
 	}
 
 	if len(i.batch) > 0 && connectionName != driverNameFirebird {
-		err = i.storer.batchInsert(i.batch)
+		err = i.storer.batchInsert(i.batch, false)
 		if err != nil {
 			rollbackErr := i.storer.rollbackTransaction()
 			if rollbackErr != nil {
@@ -137,7 +138,7 @@ func (i *importing) batchInsertSQL() error {
 	i.batch = append(i.batch, i.csv.row())
 	if i.batchIndex == batchSize {
 		i.batchIndex = 0
-		err := i.storer.batchInsert(i.batch)
+		err := i.storer.batchInsert(i.batch, true)
 		if err != nil {
 			rollbackErr := i.storer.rollbackTransaction()
 			if rollbackErr != nil {

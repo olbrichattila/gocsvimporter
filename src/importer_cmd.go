@@ -14,6 +14,7 @@ func Import() {
 	app, err := newApplication(
 		newArgParser(),
 		newEnv(envFileName),
+		newDbConnector(),
 		newImporter(
 			newDataStore(),
 			newCsvReader(),
