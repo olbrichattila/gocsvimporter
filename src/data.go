@@ -39,6 +39,7 @@ func (s *dataStore) init(tableName string) error {
 		return err
 	}
 
+	// TODO: Shoud those new statements come with DI?
 	s.sQLGenerator = newSQLGenerator(config, tableName)
 	s.databaseConfig = config
 	s.quote = config.getFieldQuote()
