@@ -19,20 +19,17 @@ const (
 	dbConnectionTypeMemory   = "memory"
 )
 
-func newDbConnector() *connector {
-	return &connector{}
+func newDbConfig() (dBConfiger, error) {
+	conf := &dBconf{}
+	err := conf.init()
+	return conf.config, err
 }
 
-type dBConnector interface {
-	init() error
-	getDBConfig() dBConfiger
-}
-
-type connector struct {
+type dBconf struct {
 	config dBConfiger
 }
 
-func (c *connector) init() error {
+func (c *dBconf) init() error {
 	dbConnection := os.Getenv(envdbConnection)
 
 	switch dbConnection {
@@ -54,8 +51,4 @@ func (c *connector) init() error {
 	default:
 		return fmt.Errorf("invalid DB_CONNECTION %s", dbConnection)
 	}
-}
-
-func (c connector) getDBConfig() dBConfiger {
-	return c.config
 }

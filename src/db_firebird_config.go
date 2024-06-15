@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -53,4 +54,25 @@ func (c *firebirdConfig) getDropTableString(tableName string) string {
 		tableName,
 		quote,
 	)
+}
+
+func (c *firebirdConfig) getNewConnection() (*sql.DB, error) {
+	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func (c *firebirdConfig) haveBatchInsert() bool {
+	// Firebird does not support bach insert, setting it to true will break the import
+	return false
+}
+
+func (c *firebirdConfig) haveMultipleThreads() bool {
+	return true
+}
+
+func (c *firebirdConfig) needTransactions() bool {
+	return true
 }

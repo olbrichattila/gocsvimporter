@@ -22,12 +22,15 @@ var dbFieldMap = map[int]string{
 	4: "VARCHAR",
 }
 
-func newCsvReader() *readCsv {
-	return &readCsv{}
+func newCsvReader(fileName string, separator rune) csvReader {
+	return &readCsv{
+		fileName:  fileName,
+		separator: separator,
+	}
 }
 
 type csvReader interface {
-	init(f string, c rune) error
+	init() error
 	header() cSVFields
 	next() bool
 	row() []any
@@ -43,6 +46,8 @@ type cSVField struct {
 type cSVFields = []cSVField
 
 type readCsv struct {
+	fileName      string
+	separator     rune
 	file          *os.File
 	reader        *csv.Reader
 	headers       []string
@@ -102,8 +107,8 @@ func (r *readCsv) close() {
 	r.file.Close()
 }
 
-func (r *readCsv) init(f string, c rune) error {
-	file, err := os.Open(f)
+func (r *readCsv) init() error {
+	file, err := os.Open(r.fileName)
 	if err != nil {
 		return err
 	}
@@ -111,7 +116,7 @@ func (r *readCsv) init(f string, c rune) error {
 	r.file = file
 
 	reader := csv.NewReader(r.file)
-	reader.Comma = c
+	reader.Comma = r.separator
 	r.reader = reader
 
 	err = r.setHeader()

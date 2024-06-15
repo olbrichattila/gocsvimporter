@@ -31,7 +31,8 @@ type records = []record
 
 type integrationTestSuite struct {
 	suite.Suite
-	app *application
+	app      *application
+	dBconfig dBConfiger
 }
 
 func TestIntegrationRunner(t *testing.T) {
@@ -39,27 +40,47 @@ func TestIntegrationRunner(t *testing.T) {
 }
 
 func (t *integrationTestSuite) SetupTest() {
+
+	err := newEnvMock().loadEnv()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	dBconfig, err := newDbConfig()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	t.dBconfig = dBconfig
+	csvFileName, separator, tableName, err := newMockParser().pharse()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	app, err := newApplication(
-		newMockParser(),
-		newEnvMock(),
-		newDbConnector(),
 		newImporter(
-			newDataStore(),
-			newCsvReader(),
+			dBconfig,
+			newCsvReader(csvFileName, separator),
+			newSQLGenerator(
+				dBconfig,
+				tableName,
+			),
+			newStorager(dBconfig),
 		),
 	)
+
 	t.NoError(err)
 	t.app = app
 }
 
 func (t *integrationTestSuite) TestImportsCorrectly() {
-	err := t.app.importer.importCsv()
+	_, _, _, err := t.app.importer.importCsv()
 	t.NoError(err)
 
-	db := t.app.importer.getStorer().getConnection()
-	t.NotNil(db)
-
-	db, err = t.reConnect()
+	db, err := t.reConnect()
 	t.NoError(err)
 	defer db.Close()
 
@@ -111,17 +132,11 @@ func (t *integrationTestSuite) TestImportsCorrectly() {
 }
 
 func (t *integrationTestSuite) reConnect() (*sql.DB, error) {
-	connector := newDbConnector()
-	err := connector.init()
-	if err != nil {
-		return nil, err
-	}
-
-	return newDbConnection(connector.getDBConfig())
+	return t.dBconfig.getNewConnection()
 }
 
 func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error) {
-	_, tableName, _, _ := newMockParser().pharse()
+	_, _, tableName, _ := newMockParser().pharse()
 	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
@@ -149,7 +164,7 @@ func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error
 }
 
 func (t *integrationTestSuite) fetcAll(database *sql.DB) (records, error) {
-	_, tableName, _, _ := newMockParser().pharse()
+	_, _, tableName, _ := newMockParser().pharse()
 	query := fmt.Sprintf("SELECT fieldvarchar, fieldint, fieldfloat, fieldbool FROM 	%s", tableName)
 	rows, err := database.Query(query)
 	if err != nil {

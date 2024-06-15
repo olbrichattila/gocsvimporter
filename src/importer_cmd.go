@@ -3,21 +3,39 @@ package importer
 
 import (
 	"fmt"
-	"time"
 )
 
 // Import process the file
 func Import() {
+	err := newEnv(envFileName).loadEnv()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	dBconfig, err := newDbConfig()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	csvFileName, separator, tableName, err := newArgParser().pharse()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	fmt.Println("Analising CSV...")
-	startTime := time.Now()
 
 	app, err := newApplication(
-		newArgParser(),
-		newEnv(envFileName),
-		newDbConnector(),
 		newImporter(
-			newDataStore(),
-			newCsvReader(),
+			dBconfig,
+			newCsvReader(csvFileName, separator),
+			newSQLGenerator(
+				dBconfig,
+				tableName,
+			),
+			newStorager(dBconfig),
 		),
 	)
 
@@ -26,13 +44,12 @@ func Import() {
 		return
 	}
 
-	analysisTime := time.Now()
-	err = app.importer.importCsv()
+	pharseTime, importTime, totalTime, err := app.importer.importCsv()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	// TODO: tests stats, time may not be correctly dispayed
-	app.displayTimeStat(startTime, analysisTime)
+	app.displayTimeStat(pharseTime, importTime, totalTime)
 }

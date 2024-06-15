@@ -23,7 +23,7 @@ type enver interface {
 	loadEnv() error
 }
 
-func newEnv(fileName string) *env {
+func newEnv(fileName string) enver {
 	return &env{fileName: fileName}
 }
 

@@ -6,7 +6,7 @@ type envMock struct {
 	called int
 }
 
-func newEnvMock() *envMock {
+func newEnvMock() enver {
 	return &envMock{called: 0}
 }
 

@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -41,4 +42,24 @@ func (c *mySQLConfig) getBinding() string {
 func (c *mySQLConfig) getDropTableString(tableName string) string {
 	quote := c.getFieldQuote()
 	return fmt.Sprintf(defaultDropTableFormat, quote, tableName, quote)
+}
+
+func (c *mySQLConfig) getNewConnection() (*sql.DB, error) {
+	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func (c *mySQLConfig) haveBatchInsert() bool {
+	return true
+}
+
+func (c *mySQLConfig) haveMultipleThreads() bool {
+	return true
+}
+
+func (c *mySQLConfig) needTransactions() bool {
+	return true
 }

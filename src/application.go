@@ -3,7 +3,6 @@ package importer
 import (
 	"fmt"
 	"math"
-	"time"
 )
 
 type application struct {
@@ -11,59 +10,21 @@ type application struct {
 }
 
 func newApplication(
-	args argParser,
-	env enver,
-	connector dBConnector,
 	importer importer,
 ) (*application, error) {
 	app := &application{}
-
-	csvFileName, tableName, separator, err := args.pharse()
-	if err != nil {
-		return nil, err
-	}
-
-	err = env.loadEnv()
-	if err != nil {
-		return nil, err
-	}
-
-	err = connector.init()
-	if err != nil {
-		return nil, err
-	}
-
-	err = importer.getCsvReader().init(csvFileName, separator)
-	if err != nil {
-		return nil, err
-	}
-
-	err = importer.getStorer().init(connector.getDBConfig(), tableName)
-	if err != nil {
-		return nil, err
-	}
-
 	app.importer = importer
 
 	return app, nil
 }
 
-func (a *application) displayTimeStat(startTime, analysisTime time.Time) {
-	// Record the finished time
-	finishedTime := time.Now()
-
-	// Calculate the durations
-	fullAnalysisDuration := analysisTime.Sub(startTime).Seconds()
-	fullDurationDuration := finishedTime.Sub(analysisTime).Seconds()
-	totalDuration := finishedTime.Sub(startTime).Seconds()
-
-	// Convert durations to string representations
-	fullAnalysisTime := a.durationAsString(fullAnalysisDuration)
-	fullDurationTime := a.durationAsString(fullDurationDuration)
-	totalTime := a.durationAsString(totalDuration)
-
-	// Print the results
-	fmt.Printf("\nDone\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n", fullAnalysisTime, fullDurationTime, totalTime)
+func (a *application) displayTimeStat(analysisTime, imortTime, totalTime float64) {
+	fmt.Printf(
+		"\n\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n",
+		a.durationAsString(analysisTime),
+		a.durationAsString(imortTime),
+		a.durationAsString(totalTime),
+	)
 }
 
 func (application) durationAsString(elapsed float64) string {
