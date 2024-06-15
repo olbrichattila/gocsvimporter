@@ -6,11 +6,11 @@ import (
 )
 
 type application struct {
-	importer importer2
+	importer importer
 }
 
 func newApplication(
-	importer importer2,
+	importer importer,
 ) (*application, error) {
 	app := &application{}
 	app.importer = importer
@@ -20,7 +20,7 @@ func newApplication(
 
 func (a *application) displayTimeStat(analysisTime, imortTime, totalTime float64) {
 	fmt.Printf(
-		"\nDone\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n",
+		"\n\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n",
 		a.durationAsString(analysisTime),
 		a.durationAsString(imortTime),
 		a.durationAsString(totalTime),

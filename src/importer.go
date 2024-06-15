@@ -1,154 +1,287 @@
 package importer
 
 import (
+	"database/sql"
 	"fmt"
 	"math"
-	"strings"
+	"time"
 )
 
 const (
-	batchSize = 100
+	batchSize       = 100
+	numberOfThreads = 10
 )
 
+type batch = [][]any
+
+func newImporter(
+	dBconfig dBConfiger,
+	csv csvReader,
+	sQLGen sQLGenerator,
+	storer storager,
+) importer {
+	return &imp{
+		dBconfig: dBconfig,
+		csv:      csv,
+		sQLGen:   sQLGen,
+		storer:   storer,
+	}
+}
+
 type importer interface {
-	importCsv() error
-	getCsvReader() csvReader
-	getStorer() dataStorer
+	importCsv() (float64, float64, float64, error)
 }
 
-type importing struct {
-	storer     dataStorer
-	csv        csvReader
-	progress   int
-	rowNr      int
-	rowCount   int
-	batch      [][]any
-	batchIndex int
+type imp struct {
+	dBconfig    dBConfiger
+	csv         csvReader
+	sQLGen      sQLGenerator
+	storer      storager
+	connections threadConnections
+	progress    int
+	rowNr       int
+	rowCount    int
 }
 
-func newImporter(storer dataStorer, csv csvReader) *importing {
-	return &importing{
-		storer: storer,
-		csv:    csv,
-	}
-}
-
-func (i *importing) getCsvReader() csvReader {
-	return i.csv
-}
-
-func (i *importing) getStorer() dataStorer {
-	return i.storer
-}
-
-func (i *importing) importCsv() error {
-	defer func() {
-		i.storer.close()
-		i.csv.close()
-	}()
-
-	headers := i.csv.header()
-	fmt.Printf("Found %d fields\n(%s)\n", len(headers), i.headerList(headers))
-	err := i.storer.create(i.csv.header())
+func (i *imp) importCsv() (float64, float64, float64, error) {
+	startedAt := time.Now()
+	isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount, err := i.init()
 	if err != nil {
-		return err
+		return 0, 0, 0, err
+	}
+	defer i.csv.close()
+
+	err = i.createConnections(connectionCount, isTrasactional)
+	if err != nil {
+		return 0, 0, 0, err
 	}
 
-	err = i.storer.startTransaction()
+	defer i.closeConnections()
+
+	err = i.dropAndCreateTable()
 	if err != nil {
-		return err
+		return 0, 0, 0, err
 	}
-	defer func() {
-		err = i.storer.commitTransaction()
-	}()
+	insertSQL := i.sQLGen.createInsertSQL()
+
+	batchIndex := 0
+	connectionID := 0
+	var batchdata batch
+	locks := newLocker(connectionCount)
 
 	i.resetProgress()
-	connectionName := i.storer.dBConfig().getConnectionName()
-
+	importStartedAt := time.Now()
 	for i.csv.next() {
-		i.showProgress()
-		// Firebird does not seem to support batch insert?
-		if connectionName == driverNameFirebird {
-			err = i.insertSQL()
-			if err != nil {
-				return err
+		i.showProgress(locks)
+
+		if !haveBatchInsert {
+			if haveMultipleTheads {
+				connectionID = locks.getNextUnclockedID()
+				locks.getLockerByID(connectionID).lock()
+				go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, i.csv.row()...)
+				continue
 			}
+
+			i.executeBatch(i.connections[0], insertSQL, i.csv.row()...)
 			continue
 		}
 
-		err := i.batchInsertSQL()
-		if err != nil {
-			return err
-		}
-	}
+		batchdata = append(batchdata, i.csv.row())
+		if batchIndex == batchSize {
+			insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchdata, true)
 
-	if len(i.batch) > 0 && connectionName != driverNameFirebird {
-		err = i.storer.batchInsert(i.batch, false)
-		if err != nil {
-			rollbackErr := i.storer.rollbackTransaction()
-			if rollbackErr != nil {
-				return rollbackErr
+			if haveMultipleTheads {
+				connectionID = locks.getNextUnclockedID()
+				locks.getLockerByID(connectionID).lock()
+				go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, bindingPars...)
+			} else {
+				i.executeBatch(i.connections[0], insertSQL, bindingPars...)
 			}
-			return err
+
+			batchIndex = 0
+			batchdata = nil
+			continue
+		}
+
+		batchIndex++
+	}
+
+	if haveBatchInsert {
+		insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchdata, false)
+		if haveMultipleTheads {
+			connectionID = locks.getNextUnclockedID()
+			locks.getLockerByID(connectionID).lock()
+			go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, bindingPars...)
+		} else {
+			i.executeBatch(i.connections[0], insertSQL, bindingPars...)
 		}
 	}
 
+	if haveMultipleTheads {
+		locks.waitAll()
+	}
+
+	fmt.Printf("\nDone\n")
+	finishedAt := time.Now()
+	importTime := finishedAt.Sub(importStartedAt).Seconds()
+	pharseTime := importStartedAt.Sub(startedAt).Seconds()
+	totalTime := importTime + pharseTime
+
+	return pharseTime, importTime, totalTime, nil
+}
+
+func (i *imp) init() (bool, bool, bool, int, error) {
+	err := i.initCsv()
+	if err != nil {
+		return false, false, false, 0, err
+	}
+
+	isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount := i.initConfig()
+	return isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount, nil
+}
+
+func (i *imp) initCsv() error {
+	err := i.csv.init()
+	if err != nil {
+		return err
+	}
+
+	headers := i.csv.header()
+	fmt.Printf("Found %d fields\nRow count:%d\n\n", len(headers), i.csv.rowCount())
 	return nil
 }
 
-func (i *importing) headerList(headers cSVFields) string {
-	fields := make([]string, len(headers))
-	for i, f := range headers {
-		fields[i] = f.Name
+func (i *imp) initConfig() (bool, bool, bool, int) {
+	isTrasactional := i.dBconfig.needTransactions()
+	if isTrasactional {
+		fmt.Println("Running in transactional mode")
 	}
 
-	return strings.Join(fields, ", ")
+	haveMultipleTheads := i.dBconfig.haveMultipleThreads()
+	connectionCount := 1
+	if haveMultipleTheads {
+		fmt.Println("Running in multiple threads mode")
+		connectionCount = numberOfThreads
+	}
+
+	haveBatchInsert := i.dBconfig.haveBatchInsert()
+	if haveBatchInsert {
+		fmt.Println("Running in batch insert mode")
+	}
+
+	return isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount
 }
 
-func (i *importing) resetProgress() {
+func (i *imp) dropAndCreateTable() error {
+	err := i.dropTable(i.connections[0].db)
+	if err != nil {
+		return err
+	}
+
+	return i.createTable(i.connections[0].db)
+}
+
+func (i *imp) dropTable(db *sql.DB) error {
+	return i.storer.execute(db, i.sQLGen.getDropTableSQL())
+}
+
+func (i *imp) createTable(db *sql.DB) error {
+	return i.storer.execute(db, i.sQLGen.ceateTableSQL(i.csv.header()))
+}
+
+func (i *imp) createConnections(count int, isTransactional bool) error {
+	i.connections = make(threadConnections, count)
+	for x := range i.connections {
+		conn, err := i.dBconfig.getNewConnection()
+		if err != nil {
+			fmt.Println(err)
+			i.closeConnections()
+			return err
+		}
+		var tx *sql.Tx
+		if isTransactional {
+			tx, err = conn.Begin()
+			if err != nil {
+				fmt.Println(err)
+				i.closeConnections()
+				return err
+			}
+
+		}
+		i.connections[x] = &threadConnection{db: conn, tx: tx}
+	}
+	fmt.Printf("%d Connection opened\n", count)
+	if isTransactional {
+		fmt.Printf("%d Transaction started\n", count)
+	}
+	return nil
+}
+
+func (i *imp) closeConnections() {
+	commitCount := 0
+	closeCount := 0
+	if i.connections == nil {
+		return
+	}
+	for x := range i.connections {
+		if i.connections[x].db != nil {
+			if i.connections[x].tx != nil {
+				err := i.connections[x].tx.Commit()
+				if err != nil {
+					fmt.Println("Commit error: " + err.Error())
+				}
+				i.connections[x].tx = nil
+				commitCount++
+			}
+			err := i.connections[x].db.Close()
+			if err != nil {
+				fmt.Println(err)
+			}
+			i.connections[x].db = nil
+			closeCount++
+		}
+	}
+	fmt.Printf("%d transactions commtted\n%d connections closed", commitCount, closeCount)
+}
+
+func (i *imp) resetProgress() {
 	i.rowNr = 0
 	i.progress = 0
 	i.rowCount = i.csv.rowCount()
-	i.batchIndex = 0
 }
 
-func (i *importing) showProgress() {
+func (i *imp) showProgress(locks *lockers) {
 	i.rowNr++
 	percent := int(math.Ceil(float64(i.rowNr) / float64(i.rowCount) * 100))
 	if percent != i.progress {
 		i.progress = percent
-		fmt.Printf("\rImporting: %d%%", i.progress)
+		activeTreads := locks.getActiveThreadReport()
+		fmt.Printf("\rImporting: %d%% Active threads: [%s] ", i.progress, activeTreads)
 	}
 }
 
-func (i *importing) insertSQL() error {
-	err := i.storer.insert(i.csv.row()...)
+func (i *imp) executeBatchInThread(
+	l *locker,
+	connection *threadConnection,
+	insertSQL string,
+	bindingPars ...any,
+) {
+	defer l.unLock()
+	err := i.storer.execute(connection.getExecutor(), insertSQL, bindingPars...)
 	if err != nil {
-		rollbackErr := i.storer.rollbackTransaction()
-		if rollbackErr != nil {
-			return rollbackErr
-		}
-		return err
+		fmt.Println("BatchThreadException: " + err.Error())
+		return
 	}
-	return nil
 }
 
-func (i *importing) batchInsertSQL() error {
-	i.batch = append(i.batch, i.csv.row())
-	if i.batchIndex == batchSize {
-		i.batchIndex = 0
-		err := i.storer.batchInsert(i.batch, true)
-		if err != nil {
-			rollbackErr := i.storer.rollbackTransaction()
-			if rollbackErr != nil {
-				return rollbackErr
-			}
-			return err
-		}
-		i.batch = nil
-		return nil
+func (i *imp) executeBatch(
+	connection *threadConnection,
+	insertSQL string,
+	bindingPars ...any,
+) {
+	err := i.storer.execute(connection.getExecutor(), insertSQL, bindingPars...)
+	if err != nil {
+		fmt.Println("BatchException: " + err.Error())
+		return
 	}
-	i.batchIndex++
-
-	return nil
 }

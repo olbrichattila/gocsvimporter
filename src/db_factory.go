@@ -25,10 +25,6 @@ func newDbConfig() (dBConfiger, error) {
 	return conf.config, err
 }
 
-type dBConnector interface {
-	init() error
-}
-
 type dBconf struct {
 	config dBConfiger
 }

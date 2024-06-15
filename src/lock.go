@@ -1,7 +1,6 @@
 package importer
 
 import (
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -35,14 +34,6 @@ func (l *locker) unLock() {
 	l.locked = false
 }
 
-func (l *locker) wait() {
-	for {
-		if !l.isLocked() {
-			break
-		}
-	}
-}
-
 type lockers struct {
 	locks []*locker
 }
@@ -51,12 +42,13 @@ func (l *lockers) init(count int) {
 	l.locks = make([]*locker, count)
 	for i := range l.locks {
 		l.locks[i] = &locker{
-			mu: &sync.Mutex{},
+			mu:     &sync.Mutex{},
+			locked: false,
 		}
 	}
 }
 
-func (l *lockers) getLockerById(id int) *locker {
+func (l *lockers) getLockerByID(id int) *locker {
 	return l.locks[id]
 }
 
@@ -74,7 +66,7 @@ func (l *lockers) waitAll() {
 	}
 }
 
-func (l *lockers) getNextUnclockedId() int {
+func (l *lockers) getNextUnclockedID() int {
 	for {
 		for i := range l.locks {
 			if !l.locks[i].isLocked() {
@@ -88,9 +80,11 @@ func (l *lockers) getActiveThreadReport() string {
 	var ids []string
 	for i := range l.locks {
 		if l.locks[i].isLocked() {
-			ids = append(ids, strconv.Itoa(i))
+			ids = append(ids, "O")
+		} else {
+			ids = append(ids, " ")
 		}
 	}
 
-	return strings.Join(ids, ", ")
+	return strings.Join(ids, "")
 }

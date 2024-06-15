@@ -28,7 +28,7 @@ func Import() {
 	fmt.Println("Analising CSV...")
 
 	app, err := newApplication(
-		newImporter2(
+		newImporter(
 			dBconfig,
 			newCsvReader(csvFileName, separator),
 			newSQLGenerator(

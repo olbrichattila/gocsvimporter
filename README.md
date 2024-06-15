@@ -9,7 +9,16 @@ How it works:
 - Creates the table, drops if already exists
 - Import data
 
-The import happening in one transaction, and in multiple SQL baches (except FirebirdSQL which does not support it)
+Import modes are diffent per database type. I've tried to find the best settings for each on them
+
+The import can run
+- with/without transaction
+- batched-SQL/Insert SQL per row
+- One connection/multiple connections
+
+The batch size currently is 100 rows
+The concurent connection number is 10
+(I am planning this to be configurable in the future)
 
 Currently the following database types are supported:
 
@@ -82,16 +91,87 @@ Intel® Core™ i7-3770S CPU @ 3.10GHz × 8
 SSD
 
 ### Sqlite
-```1 minutes 50 seconds```
+```
+Analising CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in batch insert mode
+1 Connection opened
+1 Transaction started
+Importing: 100% Active threads: [ ] 
+Done
+1 transactions commtted
+1 connections closed
+
+Full Analysis time: 0 minutes 15 seconds
+Full duration time: 0 minutes 36 seconds
+Total: 0 minutes 52 seconds
+```
 
 ### MySql
-```2 minutes 38 seconds```
+```
+Analising CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in multiple threads mode
+Running in batch insert mode
+10 Connection opened
+10 Transaction started
+Importing: 100% Active threads: [OOO OOOOOO] 
+Done
+10 transactions commtted
+10 connections closed
+
+Full Analysis time: 0 minutes 15 seconds
+Full duration time: 0 minutes 50 seconds
+Total: 1 minutes 5 seconds
+```
 
 ### PostgesQl
-```2 minutes 51 seconds```
+```
+Analising CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in multiple threads mode
+Running in batch insert mode
+10 Connection opened
+10 Transaction started
+Importing: 100% Active threads: [OOO OOOOOO] 
+Done
+10 transactions commtted
+10 connections closed
+
+Full Analysis time: 0 minutes 15 seconds
+Full duration time: 0 minutes 28 seconds
+Total: 0 minutes 43 seconds
+```
 
 ### Firebird
-```27 minutes 36 seconds```
+```
+Analising CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in multiple threads mode
+
+10 Connection opened
+10 Transaction started
+Importing: 100% Active threads: [OOOOOOOOOO] 
+Done
+10 transactions commtted
+10 connections closed
+
+Full Analysis time: 0 minutes 16 seconds
+Full duration time: 5 minutes 26 seconds
+Total: 5 minutes 42 seconds
+```
 
 ## Make targets
 ```
@@ -113,24 +193,6 @@ cd docker
 docker-compose up -d
 ```
 
-## What is next
-- paralell SQL to improve speed
-
 ## TODO: Notes
-
-The Paralell SQL solution was prototyped, No improvement shown for MySql, not working for SqLite, not tested with Firebird
-Postgres - improvement to about 1 minute 29 sec,  almost double speed.
-
-The theory, is that the batches are sent in separate paralell connections to the database. SQLite as a local DB cannot work like that.
-
-It was tested with 10, 20 paralell threads.
-
-For the solution to properly implement:
-Need further code separation
-
-Factor out to a separate reusable struct:
-    SQL generator (generates Insert SQL, Create SQL ... need to be able accesible separately)
-    Separate out all database operations, as each connection needs a new local *sql.DB instance created in the go routine
-    Create (another branc already contains) a sync.Mutex locker, and wait for (x) threads and block
+- Code cleanup
     
- 

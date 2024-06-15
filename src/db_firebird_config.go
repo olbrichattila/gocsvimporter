@@ -70,8 +70,7 @@ func (c *firebirdConfig) haveBatchInsert() bool {
 }
 
 func (c *firebirdConfig) haveMultipleThreads() bool {
-	// This also kills firebird
-	return false
+	return true
 }
 
 func (c *firebirdConfig) needTransactions() bool {
