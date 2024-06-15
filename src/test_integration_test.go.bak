@@ -1,5 +1,6 @@
 package importer
 
+// TODO fix
 import (
 	"database/sql"
 	"fmt"

@@ -26,7 +26,7 @@ type sQLgen struct {
 	fieldCount           int
 }
 
-func newSQLGenerator(dBConfig dBConfiger, tableName string) *sQLgen {
+func newSQLGenerator(dBConfig dBConfiger, tableName string) sQLGenerator {
 	return &sQLgen{
 		databaseConfig: dBConfig,
 		tableName:      tableName,

@@ -1,5 +1,6 @@
 package importer
 
+// TODO: this will be deprecated
 import (
 	"database/sql"
 

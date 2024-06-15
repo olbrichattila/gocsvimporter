@@ -27,7 +27,6 @@ type importing struct {
 }
 
 func newImporter(storer dataStorer, csv csvReader) *importing {
-
 	return &importing{
 		storer: storer,
 		csv:    csv,

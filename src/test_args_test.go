@@ -35,7 +35,7 @@ func (t *argsTestSuite) TestMissingArgsReturnsError() {
 
 func (t *argsTestSuite) TestArgsReturnedWithDefaultSeparator() {
 	os.Args = []string{"1", "./fixtures/testfile.csv", "test_table"}
-	fileName, tableName, separator, err := t.pharser.pharse()
+	fileName, separator, tableName, err := t.pharser.pharse()
 
 	t.NoError(err)
 	t.Equal("./fixtures/testfile.csv", fileName)
@@ -45,7 +45,7 @@ func (t *argsTestSuite) TestArgsReturnedWithDefaultSeparator() {
 
 func (t *argsTestSuite) TestArgsReturnedWithCustomSeparator() {
 	os.Args = []string{"1", "./fixtures/testfile.csv", "test_table", ";"}
-	fileName, tableName, separator, err := t.pharser.pharse()
+	fileName, separator, tableName, err := t.pharser.pharse()
 
 	t.NoError(err)
 	t.Equal("./fixtures/testfile.csv", fileName)

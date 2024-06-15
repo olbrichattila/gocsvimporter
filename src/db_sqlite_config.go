@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -34,4 +35,25 @@ func (c *sqLiteConfig) getBinding() string {
 func (c *sqLiteConfig) getDropTableString(tableName string) string {
 	quote := c.getFieldQuote()
 	return fmt.Sprintf(defaultDropTableFormat, quote, tableName, quote)
+}
+
+func (c *sqLiteConfig) getNewConnection() (*sql.DB, error) {
+	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func (c *sqLiteConfig) haveBatchInsert() bool {
+	return true
+}
+
+func (c *sqLiteConfig) haveMultipleThreads() bool {
+	// this will cause a file lock not supported here
+	return false
+}
+
+func (c *sqLiteConfig) needTransactions() bool {
+	return true
 }

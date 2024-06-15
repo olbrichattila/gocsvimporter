@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -42,4 +43,24 @@ func (c *pgsqlConfig) getBinding() string {
 func (c *pgsqlConfig) getDropTableString(tableName string) string {
 	quote := c.getFieldQuote()
 	return fmt.Sprintf(defaultDropTableFormat, quote, tableName, quote)
+}
+
+func (c *pgsqlConfig) getNewConnection() (*sql.DB, error) {
+	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func (c *pgsqlConfig) haveBatchInsert() bool {
+	return true
+}
+
+func (c *pgsqlConfig) haveMultipleThreads() bool {
+	return true
+}
+
+func (c *pgsqlConfig) needTransactions() bool {
+	return true
 }
