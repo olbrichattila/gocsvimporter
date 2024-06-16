@@ -9,11 +9,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type sqLiteConfig struct {
-}
-
 func newSqliteConfig() *sqLiteConfig {
 	return &sqLiteConfig{}
+}
+
+type sqLiteConfig struct {
+	connection
 }
 
 func (c *sqLiteConfig) getConnectionString() string {
@@ -38,11 +39,7 @@ func (c *sqLiteConfig) getDropTableString(tableName string) string {
 }
 
 func (c *sqLiteConfig) getNewConnection() (*sql.DB, error) {
-	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return c.connect(c.getConnectionName(), c.getConnectionString())
 }
 
 func (c *sqLiteConfig) haveBatchInsert() bool {

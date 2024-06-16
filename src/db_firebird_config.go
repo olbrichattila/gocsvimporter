@@ -10,6 +10,7 @@ import (
 )
 
 type firebirdConfig struct {
+	connection
 }
 
 func newFirebirdConfig() *firebirdConfig {
@@ -57,11 +58,7 @@ func (c *firebirdConfig) getDropTableString(tableName string) string {
 }
 
 func (c *firebirdConfig) getNewConnection() (*sql.DB, error) {
-	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return c.connect(c.getConnectionName(), c.getConnectionString())
 }
 
 func (c *firebirdConfig) haveBatchInsert() bool {

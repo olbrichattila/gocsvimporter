@@ -10,6 +10,7 @@ import (
 )
 
 type pgsqlConfig struct {
+	connection
 }
 
 func newPgsqlConfig() *pgsqlConfig {
@@ -46,11 +47,7 @@ func (c *pgsqlConfig) getDropTableString(tableName string) string {
 }
 
 func (c *pgsqlConfig) getNewConnection() (*sql.DB, error) {
-	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return c.connect(c.getConnectionName(), c.getConnectionString())
 }
 
 func (c *pgsqlConfig) haveBatchInsert() bool {

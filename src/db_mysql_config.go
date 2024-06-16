@@ -10,6 +10,7 @@ import (
 )
 
 type mySQLConfig struct {
+	connection
 }
 
 func newMySQLConfig() *mySQLConfig {
@@ -45,11 +46,7 @@ func (c *mySQLConfig) getDropTableString(tableName string) string {
 }
 
 func (c *mySQLConfig) getNewConnection() (*sql.DB, error) {
-	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return c.connect(c.getConnectionName(), c.getConnectionString())
 }
 
 func (c *mySQLConfig) haveBatchInsert() bool {

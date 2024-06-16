@@ -6,6 +6,7 @@ import (
 )
 
 type memoryConfig struct {
+	connection
 }
 
 func newMemoryDBConfig() *memoryConfig {
@@ -34,11 +35,7 @@ func (c *memoryConfig) getDropTableString(tableName string) string {
 }
 
 func (c *memoryConfig) getNewConnection() (*sql.DB, error) {
-	db, err := sql.Open(c.getConnectionName(), c.getConnectionString())
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return c.connect(c.getConnectionName(), c.getConnectionString())
 }
 
 func (c *memoryConfig) haveBatchInsert() bool {
