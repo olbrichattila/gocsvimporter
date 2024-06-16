@@ -87,8 +87,8 @@ The defualt bath size is 100, the default max connection count is 10.
 
 If the values are incorrectly set, (not a number), then it will fall back to default values
 
-- The BATCH_INSERT can be set to ON or OFF, This will overwrite the default configuration / database type
-- The MULTIPLE_CONNECTIONS can be set to ON or OFF, This will overwrite the default configuration / database type
+- The BATCH_INSERT can be set to ON or OFF, This will overwrite the default configuration / database type (in Firebird it's ignored)
+- The MULTIPLE_CONNECTIONS can be set to ON or OFF, This will overwrite the default configuration / database type (in sqLite it's ignored)
 - The TRANSACTIONAL can be set to ON or OFF, This will overwrite the default configuration / database type
 
 ```
