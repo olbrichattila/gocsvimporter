@@ -39,13 +39,14 @@ func (c *memoryConfig) getNewConnection() (*sql.DB, error) {
 }
 
 func (c *memoryConfig) haveBatchInsert() bool {
-	return true
+	return c.isOnByEnv(envBatchInsert, true)
 }
 
 func (c *memoryConfig) haveMultipleThreads() bool {
+	// not supported
 	return false
 }
 
 func (c *memoryConfig) needTransactions() bool {
-	return true
+	return c.isOnByEnv(envTransactional, true)
 }

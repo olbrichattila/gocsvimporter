@@ -51,13 +51,13 @@ func (c *pgsqlConfig) getNewConnection() (*sql.DB, error) {
 }
 
 func (c *pgsqlConfig) haveBatchInsert() bool {
-	return true
+	return c.isOnByEnv(envBatchInsert, true)
 }
 
 func (c *pgsqlConfig) haveMultipleThreads() bool {
-	return true
+	return c.isOnByEnv(envMultipleConnections, true)
 }
 
 func (c *pgsqlConfig) needTransactions() bool {
-	return true
+	return c.isOnByEnv(envTransactional, true)
 }

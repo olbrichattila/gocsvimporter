@@ -80,14 +80,23 @@ DB_PASSWORD=masterkey
 
 ## Optional parameters in .env
 
-- The batch size, is how many rows are sent to the database engine per insertSQL (Firebird does not souport it and will be ignored)
-- The max connection count is how many connection (max) should be established to the database at the same time (SQLite does not support that)
-- The defualt bath size is 100, the default max connection count is 10.
-- If the values are incorrectly set, (not a number), then it will fall back to default values
+- The BATCH_SIZE, is how many rows are sent to the database engine per insertSQL (Firebird does not souport it and will be ignored)
+- The MAX_CONNECTION_COUNT is how many connection (max) should be established to the database at the same time (SQLite does not support that)
+
+The defualt bath size is 100, the default max connection count is 10.
+
+If the values are incorrectly set, (not a number), then it will fall back to default values
+
+- The BATCH_INSERT can be set to ON or OFF, This will overwrite the default configuration / database type
+- The MULTIPLE_CONNECTIONS can be set to ON or OFF, This will overwrite the default configuration / database type
+- The TRANSACTIONAL can be set to ON or OFF, This will overwrite the default configuration / database type
 
 ```
 BATCH_SIZE=500
 MAX_CONNECTION_COUNT=25
+BATCH_INSERT=on
+MULTIPLE_CONNECTIONS=on
+TRANSACTIONAL=off
 ```
 
 ## Speed analisys with 2 million rows:
@@ -203,4 +212,8 @@ docker-compose up -d
 
 ## TODO: Notes
 - Code cleanup
-    
+
+## Next steps, possible improvements
+- Make it distributable, when analysing the file, record some file pointer number and split up the imporer by distribution the application between (pods, servers, virtual machines). Each one of them will open the CSV in a readonly / file shared mode and will start pusing to the databasae engine from it's designated file pointer until it designated target file pointer. In theory this could work in one machine to process the file in go routines per block. The distributed importers would work the same way
+
+

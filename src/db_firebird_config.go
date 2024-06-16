@@ -67,9 +67,9 @@ func (c *firebirdConfig) haveBatchInsert() bool {
 }
 
 func (c *firebirdConfig) haveMultipleThreads() bool {
-	return true
+	return c.isOnByEnv(envMultipleConnections, true)
 }
 
 func (c *firebirdConfig) needTransactions() bool {
-	return true
+	return c.isOnByEnv(envTransactional, true)
 }

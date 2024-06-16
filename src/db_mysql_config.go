@@ -50,13 +50,13 @@ func (c *mySQLConfig) getNewConnection() (*sql.DB, error) {
 }
 
 func (c *mySQLConfig) haveBatchInsert() bool {
-	return true
+	return c.isOnByEnv(envBatchInsert, true)
 }
 
 func (c *mySQLConfig) haveMultipleThreads() bool {
-	return true
+	return c.isOnByEnv(envMultipleConnections, true)
 }
 
 func (c *mySQLConfig) needTransactions() bool {
-	return true
+	return c.isOnByEnv(envTransactional, true)
 }
