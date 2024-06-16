@@ -7,14 +7,16 @@ import (
 )
 
 const (
-	envFileName     = "./.env"
-	envdbConnection = "DB_CONNECTION"
-	envdbUserName   = "DB_USERNAME"
-	envdbPassword   = "DB_PASSWORD"
-	envdbHost       = "DB_HOST"
-	envdbPort       = "DB_PORT"
-	envdbDatabase   = "DB_DATABASE"
-	envdbSSLMode    = "DB_SSLMODE"
+	envFileName           = "./.env"
+	envdbConnection       = "DB_CONNECTION"
+	envdbUserName         = "DB_USERNAME"
+	envdbPassword         = "DB_PASSWORD"
+	envdbHost             = "DB_HOST"
+	envdbPort             = "DB_PORT"
+	envdbDatabase         = "DB_DATABASE"
+	envdbSSLMode          = "DB_SSLMODE"
+	envBatchSize          = "BATCH_SIZE"
+	envMaxConnectionCount = "MAX_CONNECTION_COUNT"
 )
 
 const ()

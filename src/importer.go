@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"os"
+	"strconv"
 	"time"
 )
 
 const (
-	batchSize       = 100
-	numberOfThreads = 10
+	defaultBatchSize       = 100
+	defaultNumberOfThreads = 10
 )
 
 type batch = [][]any
@@ -50,6 +52,10 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		return 0, 0, 0, err
 	}
 	defer i.csv.close()
+	batchSize := i.getIntEnv(envBatchSize, defaultBatchSize)
+	if i.dBconfig.haveBatchInsert() {
+		fmt.Printf("Batch size is %d\n", batchSize)
+	}
 
 	err = i.createConnections(connectionCount, isTrasactional)
 	if err != nil {
@@ -161,7 +167,7 @@ func (i *imp) initConfig() (bool, bool, bool, int) {
 	connectionCount := 1
 	if haveMultipleTheads {
 		fmt.Println("Running in multiple threads mode")
-		connectionCount = numberOfThreads
+		connectionCount = i.getIntEnv(envMaxConnectionCount, defaultNumberOfThreads)
 	}
 
 	haveBatchInsert := i.dBconfig.haveBatchInsert()
@@ -170,6 +176,18 @@ func (i *imp) initConfig() (bool, bool, bool, int) {
 	}
 
 	return isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount
+}
+
+func (i *imp) getIntEnv(key string, defaultValue int) int {
+	if value, exists := os.LookupEnv(key); exists {
+		intValue, err := strconv.Atoi(value)
+		if err != nil {
+			return defaultValue
+		}
+		return intValue
+	}
+
+	return defaultValue
 }
 
 func (i *imp) dropAndCreateTable() error {

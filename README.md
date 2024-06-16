@@ -82,6 +82,16 @@ DB_USERNAME=SYSDBA
 DB_PASSWORD=masterkey
 ```
 
+## Optional parameters in .env
+
+- The batch size, is how many rows are sent to the database engine per insertSQL (Firebird does not souport it and will be ignored)
+- The max connection count is how many connection should be established to the database at the same time (SQLite does not support that)
+
+```
+BATCH_SIZE=500
+MAX_CONNECTION_COUNT=25
+```
+
 ## Speed analisys with 2 million rows:
 12 Columns: (Index, Customer Id, First Name, Last Name, Company, City, Country, Phone 1, Phone 2, Email, Subscription Date, Website)
 
