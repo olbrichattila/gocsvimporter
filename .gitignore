@@ -1,3 +1,4 @@
+.vscode
 database/
 .env
 .env.csvimporter
