@@ -20,7 +20,7 @@ func (*parseArgs) parse() (string, rune, string, error) {
 	separator := ','
 	argLen := len(os.Args)
 	if argLen < 3 {
-		return "", ',', "", fmt.Errorf("usage: go run main.go <filename> <tablename> \";\"")
+		return "", ',', "", fmt.Errorf("usage: csvimporter <filename> <tablename> \";\"\nFor help:\n csvimporter --help")
 	}
 
 	if argLen >= 4 {

@@ -8,17 +8,13 @@
 go install github.com/olbrichattila/gocsvimporter/cmd/csvimporter@latest
 ```
 
-
-
-
-
 How it works:
 
 - Analyses the CSV file and determine the file types
 - Creates the table, drops if already exists
 - Import data
 
-Import modes are diffent per database type. I've tried to find the best settings for each on them
+Import modes are different per database type. I've tried to find the best settings for each on them
 
 The import can run
 - with/without transaction
@@ -100,7 +96,7 @@ DB_PASSWORD=masterkey
 - The BATCH_SIZE, is how many rows are sent to the database engine per insertSQL (Firebird does not souport it and will be ignored)
 - The MAX_CONNECTION_COUNT is how many connection (max) should be established to the database at the same time (SQLite does not support that)
 
-The defualt bath size is 100, the default max connection count is 10.
+The default bath size is 100, the default max connection count is 10.
 
 If the values are incorrectly set, (not a number), then it will fall back to default values
 
