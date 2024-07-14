@@ -19,7 +19,7 @@ func Import() {
 		return
 	}
 
-	csvFileName, separator, tableName, err := newArgParser().pharse()
+	csvFileName, separator, tableName, err := newArgParser().parse()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -44,12 +44,12 @@ func Import() {
 		return
 	}
 
-	pharseTime, importTime, totalTime, err := app.importer.importCsv()
+	phraseTime, importTime, totalTime, err := app.importer.importCsv()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// TODO: tests stats, time may not be correctly dispayed
-	app.displayTimeStat(pharseTime, importTime, totalTime)
+	// TODO: tests stats, time may not be correctly displayed
+	app.displayTimeStat(phraseTime, importTime, totalTime)
 }

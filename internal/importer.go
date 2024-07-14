@@ -47,7 +47,7 @@ type imp struct {
 
 func (i *imp) importCsv() (float64, float64, float64, error) {
 	startedAt := time.Now()
-	isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount, err := i.init()
+	isTrasactional, haveMultipleThreads, haveBatchInsert, connectionCount, err := i.init()
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -72,7 +72,7 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 
 	batchIndex := 0
 	connectionID := 0
-	var batchdata batch
+	var batchData batch
 	locks := newLocker(connectionCount)
 
 	i.resetProgress()
@@ -81,8 +81,8 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		i.showProgress(locks)
 
 		if !haveBatchInsert {
-			if haveMultipleTheads {
-				connectionID = locks.getNextUnclockedID()
+			if haveMultipleThreads {
+				connectionID = locks.getNextUnlockedID()
 				locks.getLockerByID(connectionID).lock()
 				go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, i.csv.row()...)
 				continue
@@ -92,12 +92,12 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 			continue
 		}
 
-		batchdata = append(batchdata, i.csv.row())
+		batchData = append(batchData, i.csv.row())
 		if batchIndex == batchSize {
-			insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchdata, true)
+			insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchData, true)
 
-			if haveMultipleTheads {
-				connectionID = locks.getNextUnclockedID()
+			if haveMultipleThreads {
+				connectionID = locks.getNextUnlockedID()
 				locks.getLockerByID(connectionID).lock()
 				go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, bindingPars...)
 			} else {
@@ -105,7 +105,7 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 			}
 
 			batchIndex = 0
-			batchdata = nil
+			batchData = nil
 			continue
 		}
 
@@ -113,9 +113,9 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 	}
 
 	if haveBatchInsert {
-		insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchdata, false)
-		if haveMultipleTheads {
-			connectionID = locks.getNextUnclockedID()
+		insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchData, false)
+		if haveMultipleThreads {
+			connectionID = locks.getNextUnlockedID()
 			locks.getLockerByID(connectionID).lock()
 			go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, bindingPars...)
 		} else {
@@ -123,17 +123,17 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		}
 	}
 
-	if haveMultipleTheads {
+	if haveMultipleThreads {
 		locks.waitAll()
 	}
 
 	fmt.Printf("\nDone\n")
 	finishedAt := time.Now()
 	importTime := finishedAt.Sub(importStartedAt).Seconds()
-	pharseTime := importStartedAt.Sub(startedAt).Seconds()
-	totalTime := importTime + pharseTime
+	phraseTime := importStartedAt.Sub(startedAt).Seconds()
+	totalTime := importTime + phraseTime
 
-	return pharseTime, importTime, totalTime, nil
+	return phraseTime, importTime, totalTime, nil
 }
 
 func (i *imp) init() (bool, bool, bool, int, error) {
@@ -142,8 +142,8 @@ func (i *imp) init() (bool, bool, bool, int, error) {
 		return false, false, false, 0, err
 	}
 
-	isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount := i.initConfig()
-	return isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount, nil
+	isTransactional, haveMultipleTheads, haveBatchInsert, connectionCount := i.initConfig()
+	return isTransactional, haveMultipleTheads, haveBatchInsert, connectionCount, nil
 }
 
 func (i *imp) initCsv() error {
@@ -158,8 +158,8 @@ func (i *imp) initCsv() error {
 }
 
 func (i *imp) initConfig() (bool, bool, bool, int) {
-	isTrasactional := i.dBconfig.needTransactions()
-	if isTrasactional {
+	isTransactional := i.dBconfig.needTransactions()
+	if isTransactional {
 		fmt.Println("Running in transactional mode")
 	}
 
@@ -175,7 +175,7 @@ func (i *imp) initConfig() (bool, bool, bool, int) {
 		fmt.Println("Running in batch insert mode")
 	}
 
-	return isTrasactional, haveMultipleTheads, haveBatchInsert, connectionCount
+	return isTransactional, haveMultipleTheads, haveBatchInsert, connectionCount
 }
 
 func (i *imp) getIntEnv(key string, defaultValue int) int {
@@ -204,7 +204,7 @@ func (i *imp) dropTable(db *sql.DB) error {
 }
 
 func (i *imp) createTable(db *sql.DB) error {
-	return i.storer.execute(db, i.sQLGen.ceateTableSQL(i.csv.header()))
+	return i.storer.execute(db, i.sQLGen.cerateTableSQL(i.csv.header()))
 }
 
 func (i *imp) createConnections(count int, isTransactional bool) error {
@@ -259,7 +259,7 @@ func (i *imp) closeConnections() {
 			closeCount++
 		}
 	}
-	fmt.Printf("%d transactions commtted\n%d connections closed", commitCount, closeCount)
+	fmt.Printf("%d transactions committed\n%d connections closed", commitCount, closeCount)
 }
 
 func (i *imp) resetProgress() {

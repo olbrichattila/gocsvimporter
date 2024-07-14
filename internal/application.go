@@ -18,11 +18,11 @@ func newApplication(
 	return app, nil
 }
 
-func (a *application) displayTimeStat(analysisTime, imortTime, totalTime float64) {
+func (a *application) displayTimeStat(analysisTime, importTime, totalTime float64) {
 	fmt.Printf(
 		"\n\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n",
 		a.durationAsString(analysisTime),
-		a.durationAsString(imortTime),
+		a.durationAsString(importTime),
 		a.durationAsString(totalTime),
 	)
 }

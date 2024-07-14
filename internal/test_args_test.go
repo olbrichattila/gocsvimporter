@@ -10,7 +10,7 @@ import (
 type argsTestSuite struct {
 	suite.Suite
 	originalArgs []string
-	pharser      argParser
+	parser       argParser
 }
 
 func TestArgsRunner(t *testing.T) {
@@ -20,7 +20,7 @@ func TestArgsRunner(t *testing.T) {
 
 func (t *argsTestSuite) SetupTest() {
 	t.originalArgs = os.Args
-	t.pharser = newArgParser()
+	t.parser = newArgParser()
 }
 
 func (t *argsTestSuite) TearDownTest() {
@@ -29,13 +29,13 @@ func (t *argsTestSuite) TearDownTest() {
 
 func (t *argsTestSuite) TestMissingArgsReturnsError() {
 	os.Args = []string{}
-	_, _, _, err := t.pharser.pharse()
+	_, _, _, err := t.parser.parse()
 	t.Error(err)
 }
 
 func (t *argsTestSuite) TestArgsReturnedWithDefaultSeparator() {
 	os.Args = []string{"1", "./fixtures/testfile.csv", "test_table"}
-	fileName, separator, tableName, err := t.pharser.pharse()
+	fileName, separator, tableName, err := t.parser.parse()
 
 	t.NoError(err)
 	t.Equal("./fixtures/testfile.csv", fileName)
@@ -45,7 +45,7 @@ func (t *argsTestSuite) TestArgsReturnedWithDefaultSeparator() {
 
 func (t *argsTestSuite) TestArgsReturnedWithCustomSeparator() {
 	os.Args = []string{"1", "./fixtures/testfile.csv", "test_table", ";"}
-	fileName, separator, tableName, err := t.pharser.pharse()
+	fileName, separator, tableName, err := t.parser.parse()
 
 	t.NoError(err)
 	t.Equal("./fixtures/testfile.csv", fileName)
@@ -55,7 +55,7 @@ func (t *argsTestSuite) TestArgsReturnedWithCustomSeparator() {
 
 func (t *argsTestSuite) TestFileNotExistsReturnsError() {
 	os.Args = []string{"1", "testfile-missing.csv", "test_table", ";"}
-	_, _, _, err := t.pharser.pharse()
+	_, _, _, err := t.parser.parse()
 
 	t.Error(err)
 }

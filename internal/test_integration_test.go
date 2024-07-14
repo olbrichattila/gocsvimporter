@@ -54,7 +54,7 @@ func (t *integrationTestSuite) SetupTest() {
 	}
 
 	t.dBconfig = dBconfig
-	csvFileName, separator, tableName, err := newMockParser().pharse()
+	csvFileName, separator, tableName, err := newMockParser().parse()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -136,7 +136,7 @@ func (t *integrationTestSuite) reConnect() (*sql.DB, error) {
 }
 
 func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error) {
-	_, _, tableName, _ := newMockParser().pharse()
+	_, _, tableName, _ := newMockParser().parse()
 	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
@@ -164,7 +164,7 @@ func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error
 }
 
 func (t *integrationTestSuite) fetcAll(database *sql.DB) (records, error) {
-	_, _, tableName, _ := newMockParser().pharse()
+	_, _, tableName, _ := newMockParser().parse()
 	query := fmt.Sprintf("SELECT fieldvarchar, fieldint, fieldfloat, fieldbool FROM 	%s", tableName)
 	rows, err := database.Query(query)
 	if err != nil {

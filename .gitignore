@@ -1,5 +1,6 @@
 database/
 .env
+.env.csvimporter
 customers.csv
 data.csv
 gocsvimporter

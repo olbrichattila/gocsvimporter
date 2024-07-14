@@ -6,7 +6,7 @@ import (
 )
 
 type argParser interface {
-	pharse() (string, rune, string, error)
+	parse() (string, rune, string, error)
 }
 
 type parseArgs struct {
@@ -16,7 +16,7 @@ func newArgParser() argParser {
 	return &parseArgs{}
 }
 
-func (*parseArgs) pharse() (string, rune, string, error) {
+func (*parseArgs) parse() (string, rune, string, error) {
 	separator := ','
 	argLen := len(os.Args)
 	if argLen < 3 {

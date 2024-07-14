@@ -1,15 +1,15 @@
 vehicles:
-	go run . data.csv vehicles ";"
+	go run ./cmd/csvimporter/ data.csv vehicles ";"
 customers:
-	go run . customers.csv customers ","
+	go run ./cmd/csvimporter/ customers.csv customers ","
 switch-sqlite:
-	cp .env.sqlite.example .env
+	cp .env.sqlite.example .env.csvimporter
 switch-mysql:
-	cp .env.mysql.example .env
+	cp .env.mysql.example .env.csvimporter
 switch-pgsql:
-	cp .env.pgsql.example .env
+	cp .env.pgsql.example .env.csvimporter
 switch-firebird:
-	cp .env.firebird.example .env
+	cp .env.firebird.example ..env.csvimporter
 lint:
 	gocritic check ./...
 	revive ./...

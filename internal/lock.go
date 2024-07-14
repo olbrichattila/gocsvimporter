@@ -66,7 +66,7 @@ func (l *lockers) waitAll() {
 	}
 }
 
-func (l *lockers) getNextUnclockedID() int {
+func (l *lockers) getNextUnlockedID() int {
 	for {
 		for i := range l.locks {
 			if !l.locks[i].isLocked() {

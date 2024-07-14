@@ -9,7 +9,7 @@ import (
 )
 
 type sQLGenerator interface {
-	ceateTableSQL(cSVFields) string
+	cerateTableSQL(cSVFields) string
 	getDropTableSQL() string
 	createInsertSQL() string
 	createBatchInsertSQL([][]any, bool) (string, []any)
@@ -22,7 +22,7 @@ type sQLgen struct {
 	quote                string
 	cachedBatchInsertSQL string
 	batchInsertSQLCached bool
-	normalisedFieldNames []string
+	normalizedFieldNames []string
 	fieldCount           int
 }
 
@@ -35,12 +35,12 @@ func newSQLGenerator(dBConfig dBConfiger, tableName string) sQLGenerator {
 	}
 }
 
-func (g *sQLgen) ceateTableSQL(fieldNames cSVFields) string {
+func (g *sQLgen) cerateTableSQL(fieldNames cSVFields) string {
 	var crDecl []string
 	for _, n := range fieldNames {
 		g.fieldCount++
 		fn := g.normalizeFieldName(n.Name)
-		g.normalisedFieldNames = append(g.normalisedFieldNames, fn)
+		g.normalizedFieldNames = append(g.normalizedFieldNames, fn)
 		crDecl = append(crDecl, fmt.Sprintf("%s%s%s %s", g.quote, fn, g.quote, n.Type))
 	}
 
@@ -64,19 +64,19 @@ func (g *sQLgen) createInsertSQL() string {
 	return fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES (%s)", g.quote, g.tableName, g.quote, g.fieldNamesAsString(), bindingStr)
 }
 
-func (g *sQLgen) createBatchInsertSQL(data [][]any, isfullBatch bool) (string, []any) {
+func (g *sQLgen) createBatchInsertSQL(data [][]any, isFullBatch bool) (string, []any) {
 	var pars []any
 	for _, val := range data {
 		pars = append(pars, val...)
 	}
-	if isfullBatch && g.batchInsertSQLCached {
+	if isFullBatch && g.batchInsertSQLCached {
 		return g.cachedBatchInsertSQL, pars
 	}
 
-	bindinStr := g.getBatchBindings(len(data), g.fieldCount)
-	insertSQL := fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES %s", g.quote, g.tableName, g.quote, g.fieldNamesAsString(), bindinStr)
+	bindingStr := g.getBatchBindings(len(data), g.fieldCount)
+	insertSQL := fmt.Sprintf("INSERT INTO %s%s%s (%s) VALUES %s", g.quote, g.tableName, g.quote, g.fieldNamesAsString(), bindingStr)
 
-	if isfullBatch {
+	if isFullBatch {
 		g.cachedBatchInsertSQL = insertSQL
 		g.batchInsertSQLCached = true
 	}
@@ -104,7 +104,7 @@ func (g *sQLgen) normalizeFieldName(str string) string {
 
 func (g *sQLgen) fieldNamesAsString() string {
 	quotedFieldNames := make([]string, g.fieldCount)
-	for i, f := range g.normalisedFieldNames {
+	for i, f := range g.normalizedFieldNames {
 		quotedFieldNames[i] = fmt.Sprintf("%s%s%s", g.quote, f, g.quote)
 
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	envFileName     = "./.env"
+	envFileName     = ".env.csvimporter"
 	envdbConnection = "DB_CONNECTION"
 	envdbUserName   = "DB_USERNAME"
 	envdbPassword   = "DB_PASSWORD"

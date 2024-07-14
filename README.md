@@ -3,6 +3,15 @@
 ## It imports a CSV file to database.
 ### Large CSV files are supported, optimised for speed
 
+### Install as a command line
+```
+go install github.com/olbrichattila/gocsvimporter/cmd/csvimporter@latest
+```
+
+
+
+
+
 How it works:
 
 - Analyses the CSV file and determine the file types
@@ -38,7 +47,15 @@ Parameters
 
 ### Database settings.
 
-Create a file called ```.env``` next to the application or export the variables like ```export DB_CONNECTION=sqlite```
+Create a file called ```.env.csvimporter``` next to the application or export the variables like ```export DB_CONNECTION=sqlite```
+
+Usage:
+
+```
+csvimporter source.csv desttablename ";"
+```
+
+where ";" is csv separator, and this parameter is optional, if not set then the delimiter is a comma ","
 
 Examples:
 ## Sqlite
@@ -78,7 +95,7 @@ DB_USERNAME=SYSDBA
 DB_PASSWORD=masterkey
 ```
 
-## Optional parameters in .env
+## Optional parameters in .env.csvimporter
 
 - The BATCH_SIZE, is how many rows are sent to the database engine per insertSQL (Firebird does not souport it and will be ignored)
 - The MAX_CONNECTION_COUNT is how many connection (max) should be established to the database at the same time (SQLite does not support that)
@@ -99,7 +116,7 @@ MULTIPLE_CONNECTIONS=on
 TRANSACTIONAL=off
 ```
 
-## Speed analisys with 2 million rows:
+## Speed analyses with 2 million rows:
 12 Columns: (Index, Customer Id, First Name, Last Name, Company, City, Country, Phone 1, Phone 2, Email, Subscription Date, Website)
 
 Running on: Ubuntu Linux
@@ -109,7 +126,7 @@ SSD
 
 ### Sqlite
 ```
-Analising CSV...
+Analyzing CSV...
 Found 12 fields
 Row count:2000000
 
@@ -119,7 +136,7 @@ Running in batch insert mode
 1 Transaction started
 Importing: 100% Active threads: [ ] 
 Done
-1 transactions commtted
+1 transactions committed
 1 connections closed
 
 Full Analysis time: 0 minutes 15 seconds
@@ -129,7 +146,7 @@ Total: 0 minutes 52 seconds
 
 ### MySql
 ```
-Analising CSV...
+Analyzing CSV...
 Found 12 fields
 Row count:2000000
 
@@ -140,7 +157,7 @@ Running in batch insert mode
 10 Transaction started
 Importing: 100% Active threads: [OOO OOOOOO] 
 Done
-10 transactions commtted
+10 transactions committed
 10 connections closed
 
 Full Analysis time: 0 minutes 15 seconds
@@ -150,7 +167,7 @@ Total: 1 minutes 5 seconds
 
 ### PostgesQl
 ```
-Analising CSV...
+Analyzing CSV...
 Found 12 fields
 Row count:2000000
 
@@ -161,7 +178,7 @@ Running in batch insert mode
 10 Transaction started
 Importing: 100% Active threads: [OOO OOOOOO] 
 Done
-10 transactions commtted
+10 transactions committed
 10 connections closed
 
 Full Analysis time: 0 minutes 15 seconds
@@ -171,7 +188,7 @@ Total: 0 minutes 43 seconds
 
 ### Firebird
 ```
-Analising CSV...
+Analyzing CSV...
 Found 12 fields
 Row count:2000000
 
@@ -182,7 +199,7 @@ Running in multiple threads mode
 10 Transaction started
 Importing: 100% Active threads: [OOOOOOOOOO] 
 Done
-10 transactions commtted
+10 transactions committed
 10 connections closed
 
 Full Analysis time: 0 minutes 16 seconds
@@ -192,7 +209,7 @@ Total: 5 minutes 42 seconds
 
 ## Make targets
 ```
-## Some test inports
+## Some test imports
 make vehicles:
 make customers:
 	
@@ -214,6 +231,6 @@ docker-compose up -d
 - Code cleanup
 
 ## Next steps, possible improvements
-- Make it distributable, when analysing the file, record some file pointer number and split up the imporer by distribution the application between (pods, servers, virtual machines). Each one of them will open the CSV in a readonly / file shared mode and will start pusing to the databasae engine from it's designated file pointer until it designated target file pointer. In theory this could work in one machine to process the file in go routines per block. The distributed importers would work the same way
+- Make it distributable, when analyzing the file, record some file pointer number and split up the importer by distribution the application between (pods, servers, virtual machines). Each one of them will open the CSV in a readonly / file shared mode and will start pushing to the database engine from it's designated file pointer until it designated target file pointer. In theory this could work in one machine to process the file in go routines per block. The distributed importers would work the same way
 
 

@@ -2,7 +2,7 @@
 package main
 
 import (
-	importer "github.com/olbrichattila/gocsvimporter/src"
+	importer "github.com/olbrichattila/gocsvimporter/internal"
 )
 
 func main() {
