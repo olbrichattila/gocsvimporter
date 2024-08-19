@@ -9,7 +9,7 @@ switch-mysql:
 switch-pgsql:
 	cp .env.pgsql.example .env.csvimporter
 switch-firebird:
-	cp .env.firebird.example ..env.csvimporter
+	cp .env.firebird.example .env.csvimporter
 lint:
 	gocritic check ./...
 	revive ./...
