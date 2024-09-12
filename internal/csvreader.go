@@ -237,6 +237,10 @@ func (r *readCsv) deDuplicateHeader(header []string) []string {
 	deDupedHeader := make([]string, 0)
 
 	for _, fieldName := range header {
+		fn := strings.TrimSpace(fieldName)
+		if fn == "" {
+			fn = "unknown"
+		}
 		normalizedFieldName := r.normalizeFieldName(fieldName)
 		uniqueFieldName := r.uniqueFieldName(normalizedFieldName, deDupedHeader)
 		deDupedHeader = append(deDupedHeader, uniqueFieldName)
