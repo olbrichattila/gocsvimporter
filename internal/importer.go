@@ -47,7 +47,7 @@ type imp struct {
 
 func (i *imp) importCsv() (float64, float64, float64, error) {
 	startedAt := time.Now()
-	isTrasactional, haveMultipleThreads, haveBatchInsert, connectionCount, err := i.init()
+	isTransactional, haveMultipleThreads, haveBatchInsert, connectionCount, err := i.init()
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -57,7 +57,7 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		fmt.Printf("Batch size is %d\n", batchSize)
 	}
 
-	err = i.createConnections(connectionCount, isTrasactional)
+	err = i.createConnections(connectionCount, isTransactional)
 	if err != nil {
 		return 0, 0, 0, err
 	}

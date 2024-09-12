@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
+	"unicode"
 )
 
 const (
@@ -133,7 +136,7 @@ func (r *readCsv) setHeader() error {
 		return err
 	}
 
-	r.headers = record
+	r.headers = r.deDuplicateHeader(record)
 	r.headerLen = len(record)
 
 	err = r.fillLengths()
@@ -228,4 +231,58 @@ func (r *readCsv) getType(s string) int {
 	}
 
 	return dbFieldText
+}
+
+func (r *readCsv) deDuplicateHeader(header []string) []string {
+	deDupedHeader := make([]string, 0)
+
+	for _, fieldName := range header {
+		normalizedFieldName := r.normalizeFieldName(fieldName)
+		uniqueFieldName := r.uniqueFieldName(normalizedFieldName, deDupedHeader)
+		deDupedHeader = append(deDupedHeader, uniqueFieldName)
+	}
+
+	return deDupedHeader
+}
+
+func (r *readCsv) uniqueFieldName(fieldName string, header []string) string {
+	if !r.fieldExists(fieldName, header) {
+		return fieldName
+	}
+	index := 1
+	for {
+		newFieldName := fieldName + "_" + strconv.Itoa(index)
+		if !r.fieldExists(newFieldName, header) {
+			return newFieldName
+		}
+		index++
+	}
+}
+
+func (r *readCsv) fieldExists(fieldName string, header []string) bool {
+	for _, fn := range header {
+		if fn == fieldName {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (g *readCsv) normalizeFieldName(str string) string {
+	p := strings.Split(str, " ")
+	var np []string
+	for _, pc := range p {
+		reg := regexp.MustCompile("[^a-zA-Z0-9_]+")
+		result := reg.ReplaceAllString(pc, "")
+		if len(result) > 0 && unicode.IsDigit(rune(result[0])) {
+			result = "a" + result
+		}
+
+		if result != "" {
+			np = append(np, strings.ToLower(result))
+		}
+	}
+
+	return strings.Join(np, "_")
 }

@@ -2,10 +2,8 @@ package importer
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 type sQLGenerator interface {
@@ -22,7 +20,7 @@ type sQLgen struct {
 	quote                string
 	cachedBatchInsertSQL string
 	batchInsertSQLCached bool
-	normalizedFieldNames []string
+	fieldNames           []string
 	fieldCount           int
 }
 
@@ -39,9 +37,9 @@ func (g *sQLgen) cerateTableSQL(fieldNames cSVFields) string {
 	var crDecl []string
 	for _, n := range fieldNames {
 		g.fieldCount++
-		fn := g.normalizeFieldName(n.Name)
-		g.normalizedFieldNames = append(g.normalizedFieldNames, fn)
-		crDecl = append(crDecl, fmt.Sprintf("%s%s%s %s", g.quote, fn, g.quote, n.Type))
+
+		g.fieldNames = append(g.fieldNames, n.Name)
+		crDecl = append(crDecl, fmt.Sprintf("%s%s%s %s", g.quote, n.Name, g.quote, n.Type))
 	}
 
 	body := strings.Join(crDecl, ",\n")
@@ -84,27 +82,9 @@ func (g *sQLgen) createBatchInsertSQL(data [][]any, isFullBatch bool) (string, [
 	return insertSQL, pars
 }
 
-func (g *sQLgen) normalizeFieldName(str string) string {
-	p := strings.Split(str, " ")
-	var np []string
-	for _, pc := range p {
-		reg := regexp.MustCompile("[^a-zA-Z0-9]+")
-		result := reg.ReplaceAllString(pc, "")
-		if len(result) > 0 && unicode.IsDigit(rune(result[0])) {
-			result = "a" + result
-		}
-
-		if result != "" {
-			np = append(np, strings.ToLower(result))
-		}
-	}
-
-	return strings.Join(np, "_")
-}
-
 func (g *sQLgen) fieldNamesAsString() string {
 	quotedFieldNames := make([]string, g.fieldCount)
-	for i, f := range g.normalizedFieldNames {
+	for i, f := range g.fieldNames {
 		quotedFieldNames[i] = fmt.Sprintf("%s%s%s", g.quote, f, g.quote)
 
 	}
