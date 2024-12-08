@@ -1,77 +1,73 @@
-# CSV importer
+# Go CSV Importer: Multi-threaded Fast CSV to Database Tool
 
-## It imports a CSV file to database.
-### Large CSV files are supported, optimised for speed
+## Overview
+`Go CSV Importer` is a powerful, multi-threaded command-line tool designed to import large CSV files into databases quickly and efficiently. It supports various database types, offers customizable import modes, and is optimized for performance.
 
-### Install as a command line
-```
+### Key Features
+- **Support for Large CSV Files**: Handles millions of rows with ease.
+- **Multi-Database Compatibility**: Works with SQLite, MySQL, PostgreSQL, and Firebird.
+- **Configurable Import Modes**:
+  - Transactional or non-transactional imports.
+  - Batch SQL inserts or row-by-row operations.
+  - Single or multiple database connections.
+
+---
+
+## Installation
+
+Install the latest version directly from Go:
+
+```bash
 go install github.com/olbrichattila/gocsvimporter/cmd/csvimporter@latest
 ```
 
-How it works:
+---
 
-- Analyses the CSV file and determine the file types
-- Creates the table, drops if already exists
-- Import data
+## How It Works
 
-Import modes are different per database type. I've tried to find the best settings for each on them
+1. **Analyze the CSV**: Determines data types and structures.
+2. **Prepare the Database**: Automatically creates the necessary table, dropping it if it already exists.
+3. **Import Data**: Optimizes the process based on database type and chosen parameters.
 
-The import can run
-- with/without transaction
-- batched-SQL/Insert SQL per row
-- One connection/multiple connections
+### Usage
+Run the tool with:
 
-Currently the following database types are supported:
-
-- SqLite
-- MySql
-- Postgresql
-- FirebirdSql
-
-Usage: ```go run . <params>``` or ```./importcs <params>```
-
-Example:
-```
-go run . data.csv vehicles ";"
-./importcs data.csv vehicles ";"
+```bash
+csvimporter <csv_file> <table_name> [delimiter]
 ```
 
-Parameters
-1. CSV file name
-2. Table name to create
-3. The CSV delimiter, (in quotes). This parameter is optional, if not set then ","
+#### Parameters:
+1. **CSV File**: Path to the CSV file.
+2. **Table Name**: Target database table name.
+3. **Delimiter** *(Optional)*: CSV delimiter (default: `,`).
 
-### Database settings.
-
-Create a file called ```.env.csvimporter``` next to the application or export the variables like ```export DB_CONNECTION=sqlite```
-
-Usage:
-
-```
-csvimporter source.csv desttablename ";"
+#### Example:
+```bash
+csvimporter data.csv vehicles ";"
 ```
 
-where ";" is csv separator, and this parameter is optional, if not set then the delimiter is a comma ","
+---
 
-Examples:
-## Sqlite
-```
+## Supported Databases
+
+### SQLite
+```env
 DB_CONNECTION=sqlite
 DB_DATABASE=./database/database.sqlite
 ```
 
-## MySql
-```
+### MySQL
+```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=migrator
-DB_USERNAME=migrator
-DB_PASSWORD=H8E7kU8Y
+DB_DATABASE=mydb
+DB_USERNAME=myuser
+DB_PASSWORD=mypassword
 ```
 
-## Postgresql
-```
+### PostgreSQL
+```env
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
@@ -81,152 +77,85 @@ DB_PASSWORD=postgres
 DB_SSLMODE=disable
 ```
 
-## Firebird SQL
-```
+### Firebird
+```env
 DB_CONNECTION=firebird
 DB_HOST=127.0.0.1
 DB_PORT=3050
-DB_DATABASE=/firebird/data/employee.fdb
+DB_DATABASE=/path/to/database.fdb
 DB_USERNAME=SYSDBA
 DB_PASSWORD=masterkey
 ```
 
-## Optional parameters in .env.csvimporter
+---
 
-- The BATCH_SIZE, is how many rows are sent to the database engine per insertSQL (Firebird does not souport it and will be ignored)
-- The MAX_CONNECTION_COUNT is how many connection (max) should be established to the database at the same time (SQLite does not support that)
+## Configuration
 
-The default bath size is 100, the default max connection count is 10.
+Create a `.env.csvimporter` file in the application's directory or export environment variables:
 
-If the values are incorrectly set, (not a number), then it will fall back to default values
-
-- The BATCH_INSERT can be set to ON or OFF, This will overwrite the default configuration / database type (in Firebird it's ignored)
-- The MULTIPLE_CONNECTIONS can be set to ON or OFF, This will overwrite the default configuration / database type (in sqLite it's ignored)
-- The TRANSACTIONAL can be set to ON or OFF, This will overwrite the default configuration / database type
-
-```
-BATCH_SIZE=500
-MAX_CONNECTION_COUNT=25
-BATCH_INSERT=on
-MULTIPLE_CONNECTIONS=on
-TRANSACTIONAL=off
+```env
+BATCH_SIZE=500               # Rows per batch (default: 100)
+MAX_CONNECTION_COUNT=25      # Maximum connections (default: 10)
+BATCH_INSERT=on              # Enable/disable batch insert
+MULTIPLE_CONNECTIONS=on      # Enable/disable multi-threading
+TRANSACTIONAL=off            # Enable/disable transactions
 ```
 
-## Speed analyses with 2 million rows:
-12 Columns: (Index, Customer Id, First Name, Last Name, Company, City, Country, Phone 1, Phone 2, Email, Subscription Date, Website)
+*Note: Unsupported options for certain databases (e.g., SQLite) are ignored.*
 
-Running on: Ubuntu Linux
-Dell Inc. OptiPlex 7010
-Intel® Core™ i7-3770S CPU @ 3.10GHz × 8
-SSD
+---
 
-### Sqlite
-```
-Analyzing CSV...
-Found 12 fields
-Row count:2000000
+## Performance
 
-Running in transactional mode
-Running in batch insert mode
-1 Connection opened
-1 Transaction started
-Importing: 100% Active threads: [ ] 
-Done
-1 transactions committed
-1 connections closed
+### Speed Test: 2 Million Rows
+**System Configuration**:
+- **OS**: Ubuntu Linux
+- **Processor**: Intel® Core™ i7-3770S @ 3.10GHz
+- **Storage**: SSD
 
-Full Analysis time: 0 minutes 15 seconds
-Full duration time: 0 minutes 36 seconds
-Total: 0 minutes 52 seconds
-```
+| Database    | Duration   | Mode                     | Threads |
+|-------------|------------|--------------------------|---------|
+| **SQLite**  | 52 seconds | Transactional, Batch SQL | 1       |
+| **MySQL**   | 65 seconds | Transactional, Multi-Threaded | 10      |
+| **PostgreSQL** | 43 seconds | Transactional, Multi-Threaded | 10      |
+| **Firebird**| 5m 42s     | Transactional, Multi-Threaded | 10      |
 
-### MySql
-```
-Analyzing CSV...
-Found 12 fields
-Row count:2000000
+---
 
-Running in transactional mode
-Running in multiple threads mode
-Running in batch insert mode
-10 Connection opened
-10 Transaction started
-Importing: 100% Active threads: [OOO OOOOOO] 
-Done
-10 transactions committed
-10 connections closed
+## Makefile Targets
 
-Full Analysis time: 0 minutes 15 seconds
-Full duration time: 0 minutes 50 seconds
-Total: 1 minutes 5 seconds
+### Test Imports
+```bash
+make vehicles
+make customers
 ```
 
-### PostgesQl
-```
-Analyzing CSV...
-Found 12 fields
-Row count:2000000
-
-Running in transactional mode
-Running in multiple threads mode
-Running in batch insert mode
-10 Connection opened
-10 Transaction started
-Importing: 100% Active threads: [OOO OOOOOO] 
-Done
-10 transactions committed
-10 connections closed
-
-Full Analysis time: 0 minutes 15 seconds
-Full duration time: 0 minutes 28 seconds
-Total: 0 minutes 43 seconds
+### Switch Environments
+```bash
+make switch-sqlite
+make switch-mysql
+make switch-pgsql
+make switch-firebird
 ```
 
-### Firebird
-```
-Analyzing CSV...
-Found 12 fields
-Row count:2000000
+---
 
-Running in transactional mode
-Running in multiple threads mode
+## Local Testing with Docker
+A `docker-compose` setup is provided for testing:
 
-10 Connection opened
-10 Transaction started
-Importing: 100% Active threads: [OOOOOOOOOO] 
-Done
-10 transactions committed
-10 connections closed
-
-Full Analysis time: 0 minutes 16 seconds
-Full duration time: 5 minutes 26 seconds
-Total: 5 minutes 42 seconds
-```
-
-## Make targets
-```
-## Some test imports
-make vehicles:
-make customers:
-	
-## Switch between test environments
-make switch-sqlite:
-make switch-mysql:
-make switch-pgsql:
-make switch-firebird:
-```
-
-## Test locally:
-There is a docker folder:
-```
+```bash
 cd docker
 docker-compose up -d
 ```
 
-## TODO: Notes
-- Code cleanup
+---
 
-## Next steps, possible improvements
-- Make it distributable, when analyzing the file, record some file pointer number and split up the importer by distribution the application between (pods, servers, virtual machines). Each one of them will open the CSV in a readonly / file shared mode and will start pushing to the database engine from it's designated file pointer until it designated target file pointer. In theory this could work in one machine to process the file in go routines per block. The distributed importers would work the same way
+## Roadmap
 
+### Planned Improvements
+- **Distributed Import**: Split CSV files across multiple instances (pods/servers) for faster parallel imports.
+- **Enhanced Configuration**: Support more advanced database-specific settings.
 
+---
+
+Start importing your CSV files faster and more efficiently today!

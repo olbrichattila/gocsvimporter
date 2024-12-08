@@ -273,7 +273,7 @@ func (r *readCsv) fieldExists(fieldName string, header []string) bool {
 	return false
 }
 
-func (g *readCsv) normalizeFieldName(str string) string {
+func (*readCsv) normalizeFieldName(str string) string {
 	p := strings.Split(str, " ")
 	var np []string
 	for _, pc := range p {

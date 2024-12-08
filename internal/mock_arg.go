@@ -1,5 +1,7 @@
 package importer
 
+const testTableName = "test_table"
+
 type mockParser struct {
 }
 
@@ -8,5 +10,5 @@ func newMockParser() argParser {
 }
 
 func (*mockParser) parse() (string, rune, string, error) {
-	return "./fixtures/testfile.csv", ',', "test_table", nil
+	return "./fixtures/testfile.csv", ',', testTableName, nil
 }

@@ -8,5 +8,5 @@ func newDuplicateMockParser() argParser {
 }
 
 func (*duplicateMockParser) parse() (string, rune, string, error) {
-	return "./fixtures/duplicate_testfile.csv", ',', "test_table", nil
+	return "./fixtures/duplicate_testfile.csv", ',', testTableName, nil
 }
