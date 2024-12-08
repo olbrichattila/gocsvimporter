@@ -4,6 +4,14 @@ import "fmt"
 
 func displayHelp() {
 	fmt.Println(`
+Usage: csvimporter <csv_file> <table_name> [delimiter]
+  Where delimiter is optional, by default it is ,
+  In case of semicolon, please use quotes ";"
+
+Optional parameters:
+	-sh=headerFileName (only save header info into a JSON file after file analysis)
+	-lh=headerFileName (skip file analysis and uses the pre-saved header for faster regular imports)
+
 Database settings.
 Create a file called .env.csvimporter
 

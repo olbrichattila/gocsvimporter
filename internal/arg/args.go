@@ -29,7 +29,7 @@ func (t *parseArgs) Validate() error {
 	args := t.getParams()
 	argLen := len(args)
 	if argLen < 2 {
-		return fmt.Errorf("usage: csvimporter <filename> <tablename> \";\"\nFor help:\n csvimporter --help")
+		return fmt.Errorf("usage: csvimporter <filename> <tablename> \";\"\nFor help:\n csvimporter -help")
 	}
 
 	if argLen >= 3 && len(args[2]) != 1 {
