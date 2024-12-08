@@ -24,3 +24,7 @@ func (*duplicateMockParser) TableName() string {
 func (*duplicateMockParser) Separator() rune {
 	return ','
 }
+
+func (*duplicateMockParser) Flag(_ string) (string, error) {
+	return "", nil
+}

@@ -26,3 +26,7 @@ func (*mockParser) TableName() string {
 func (*mockParser) Separator() rune {
 	return ','
 }
+
+func (*mockParser) Flag(_ string) (string, error) {
+	return "", nil
+}
