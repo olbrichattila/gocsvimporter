@@ -2,9 +2,7 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"os"
 
 	importer "github.com/olbrichattila/gocsvimporter/internal"
 	"github.com/olbrichattila/gocsvimporter/internal/arg"
@@ -17,31 +15,26 @@ const (
 )
 
 func main() {
-	help := flag.Bool("help", false, "Display help")
-
-	// Parse the flags
-	flag.Parse()
-
-	// If help flag is set, display usage and exit
-	if *help {
+	arg := arg.New()
+	_, err := arg.Flag("help")
+	if err == nil {
 		displayHelp()
-		os.Exit(0)
+		return
+	}
+
+	err = arg.Validate()
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	env := env.New(envFileName)
-	err := env.LoadEnv()
+	err = env.LoadEnv()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
 	dBConfig, err := database.New()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	arg := arg.New()
-
-	err = arg.Validate()
 	if err != nil {
 		fmt.Println(err)
 		return

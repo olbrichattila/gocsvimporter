@@ -37,9 +37,19 @@ type fieldDef struct {
 type fieldDefs = []fieldDef
 
 func newCsvReader(parser arg.Parser) csvReader {
+	saveHeaderName, _ := parser.Flag("sh")
+	loadHeaderName, _ := parser.Flag("lh")
+	if saveHeaderName != "" {
+		fmt.Println("Skip importing, only analyze and save header to " + saveHeaderName + ".json")
+	} else if loadHeaderName != "" {
+		fmt.Println("Import using saved header file " + loadHeaderName + ".json")
+	}
+
 	return &readCsv{
-		fileName:  parser.FileName(),
-		separator: parser.Separator(),
+		fileName:       parser.FileName(),
+		separator:      parser.Separator(),
+		saveHeaderName: saveHeaderName,
+		loadHeaderName: loadHeaderName,
 	}
 }
 
@@ -60,16 +70,18 @@ type cSVField struct {
 type cSVFields = []cSVField
 
 type readCsv struct {
-	fileName      string
-	separator     rune
-	file          *os.File
-	reader        *csv.Reader
-	headers       []string
-	headerLen     int
-	lengths       []int
-	types         []int
-	fields        []any
-	totalRowCount int
+	fileName       string
+	separator      rune
+	file           *os.File
+	reader         *csv.Reader
+	headers        []string
+	headerLen      int
+	lengths        []int
+	types          []int
+	fields         []any
+	totalRowCount  int
+	saveHeaderName string
+	loadHeaderName string
 }
 
 func (r *readCsv) header() cSVFields {
@@ -133,20 +145,25 @@ func (r *readCsv) init() error {
 	reader.Comma = r.separator
 	r.reader = reader
 
-	// err = r.loadHeaders()
-	// if err != nil {
-	// 	return err
-	// }
-
-	err = r.setHeader()
-	if err != nil {
-		return err
+	if r.saveHeaderName == "" && r.loadHeaderName != "" {
+		err = r.loadHeaders()
+		if err != nil {
+			return err
+		}
+	} else {
+		err = r.setHeader()
+		if err != nil {
+			return err
+		}
 	}
 
-	// TODO save only if flag set
-	err = r.saveHeaders()
-	if err != nil {
-		return err
+	if r.saveHeaderName != "" {
+		err = r.saveHeaders()
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("import skipped as save header was defined")
 	}
 
 	return nil
@@ -329,7 +346,7 @@ func (r *readCsv) saveHeaders() error {
 	}
 
 	jsonData, _ := json.MarshalIndent(aggregatedFieldDefs, "", " ")
-	file, err := os.Create("header-info.json")
+	file, err := os.Create(r.saveHeaderName + ".json")
 	if err != nil {
 		return err
 	}
@@ -345,7 +362,7 @@ func (r *readCsv) saveHeaders() error {
 }
 
 func (r *readCsv) loadHeaders() error {
-	data, err := os.ReadFile("header-info.json")
+	data, err := os.ReadFile(r.loadHeaderName + ".json")
 	if err != nil {
 		return err
 	}
