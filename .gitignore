@@ -5,4 +5,4 @@ database/
 customers.csv
 data.csv
 gocsvimporter
-src/test_database.sqlite
+test_database.sqlite
