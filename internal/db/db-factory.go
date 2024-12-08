@@ -7,6 +7,7 @@ import (
 	"github.com/olbrichattila/gocsvimporter/internal/env"
 )
 
+// Database connection types
 const (
 	defaultDropTableFormat = "DROP TABLE IF EXISTS %s%s%s"
 	driverNameFirebird     = "firebirdsql"

@@ -10,6 +10,7 @@ import (
 
 	database "github.com/olbrichattila/gocsvimporter/internal/db"
 	"github.com/olbrichattila/gocsvimporter/internal/env"
+	"github.com/olbrichattila/gocsvimporter/internal/storage"
 )
 
 const (
@@ -24,7 +25,7 @@ func newImporter(
 	dBConfig database.DBConfiger,
 	csv csvReader,
 	sQLGen sQLGenerator,
-	storer storager,
+	storer storage.Storager,
 ) importer {
 	return &imp{
 		dBConfig: dBConfig,
@@ -42,7 +43,7 @@ type imp struct {
 	dBConfig    database.DBConfiger
 	csv         csvReader
 	sQLGen      sQLGenerator
-	storer      storager
+	storer      storage.Storager
 	connections threadConnections
 	progress    int
 	rowNr       int
@@ -204,11 +205,11 @@ func (i *imp) dropAndCreateTable() error {
 }
 
 func (i *imp) dropTable(db *sql.DB) error {
-	return i.storer.execute(db, i.sQLGen.getDropTableSQL())
+	return i.storer.Execute(db, i.sQLGen.getDropTableSQL())
 }
 
 func (i *imp) createTable(db *sql.DB) error {
-	return i.storer.execute(db, i.sQLGen.cerateTableSQL(i.csv.header()))
+	return i.storer.Execute(db, i.sQLGen.cerateTableSQL(i.csv.header()))
 }
 
 func (i *imp) createConnections(count int, isTransactional bool) error {
@@ -301,7 +302,7 @@ func (i *imp) executeBatchInThread(
 	bindingPars ...any,
 ) {
 	defer l.unLock()
-	err := i.storer.execute(connection.getExecutor(), insertSQL, bindingPars...)
+	err := i.storer.Execute(connection.getExecutor(), insertSQL, bindingPars...)
 	if err != nil {
 		fmt.Println("BatchThreadException: " + err.Error())
 		return
@@ -313,7 +314,7 @@ func (i *imp) executeBatch(
 	insertSQL string,
 	bindingPars ...any,
 ) {
-	err := i.storer.execute(connection.getExecutor(), insertSQL, bindingPars...)
+	err := i.storer.Execute(connection.getExecutor(), insertSQL, bindingPars...)
 	if err != nil {
 		fmt.Println("BatchException: " + err.Error())
 		return

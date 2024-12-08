@@ -33,6 +33,7 @@ type Enver interface {
 	LoadEnv() error
 }
 
+// New creates a new environment manager
 func New(fileName string) Enver {
 	return &env{fileName: fileName}
 }

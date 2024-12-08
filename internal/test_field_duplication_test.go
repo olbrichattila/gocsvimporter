@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	database "github.com/olbrichattila/gocsvimporter/internal/db"
+	"github.com/olbrichattila/gocsvimporter/internal/storage"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -57,8 +58,8 @@ func (t *duplicationTestSuite) SetupTest() {
 	}
 
 	t.dBConfig = dBConfig
-	// TODO review when getters are done
-	_, _, _, err = duplicateMockArgParser.Parse()
+
+	err = duplicateMockArgParser.Validate()
 	t.NoError(err)
 
 	t.importer = newImporter(
@@ -68,7 +69,7 @@ func (t *duplicationTestSuite) SetupTest() {
 			dBConfig,
 			duplicateMockArgParser,
 		),
-		newStorager(dBConfig),
+		storage.New(dBConfig),
 	)
 }
 
@@ -140,7 +141,7 @@ func (t *duplicationTestSuite) reConnect() (*sql.DB, error) {
 }
 
 func (t *duplicationTestSuite) fieldNames(database *sql.DB) (duplicateFieldsStucts, error) {
-	_, _, tableName, _ := newDuplicateMockArgParser().Parse()
+	tableName := newDuplicateMockArgParser().TableName()
 	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
@@ -168,7 +169,7 @@ func (t *duplicationTestSuite) fieldNames(database *sql.DB) (duplicateFieldsStuc
 }
 
 func (t *duplicationTestSuite) fetchAll(database *sql.DB) (duplicateRecords, error) {
-	_, _, tableName, _ := newDuplicateMockArgParser().Parse()
+	tableName := newDuplicateMockArgParser().TableName()
 	query := fmt.Sprintf("SELECT field1,field,field2,field_1,field_2 FROM %s", tableName)
 	rows, err := database.Query(query)
 	if err != nil {

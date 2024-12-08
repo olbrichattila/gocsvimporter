@@ -8,18 +8,11 @@ import (
 	"github.com/olbrichattila/gocsvimporter/internal/arg"
 	database "github.com/olbrichattila/gocsvimporter/internal/db"
 	"github.com/olbrichattila/gocsvimporter/internal/env"
+	"github.com/olbrichattila/gocsvimporter/internal/storage"
 )
 
 // Import process the file
 func Import(env env.Enver, dbConfig database.DBConfiger, argParser arg.Parser) {
-
-	// TODO replace it to validate
-	_, _, _, err := argParser.Parse()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	fmt.Println("Analyzing CSV...")
 
 	importer := newImporter(
@@ -29,7 +22,7 @@ func Import(env env.Enver, dbConfig database.DBConfiger, argParser arg.Parser) {
 			dbConfig,
 			argParser,
 		),
-		newStorager(dbConfig),
+		storage.New(dbConfig),
 	)
 
 	phraseTime, importTime, totalTime, err := importer.importCsv()

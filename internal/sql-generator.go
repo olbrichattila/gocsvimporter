@@ -28,11 +28,9 @@ type sQLgen struct {
 }
 
 func newSQLGenerator(dBConfig database.DBConfiger, parser arg.Parser) sQLGenerator {
-	// TODO replace it t getters when done
-	_, _, tableName, _ := parser.Parse()
 	return &sQLgen{
 		databaseConfig: dBConfig,
-		tableName:      tableName,
+		tableName:      parser.TableName(),
 		quote:          dBConfig.GetFieldQuote(),
 		bindingChar:    dBConfig.GetBinding(),
 	}

@@ -31,33 +31,57 @@ func (t *argsTestSuite) TearDownTest() {
 
 func (t *argsTestSuite) TestMissingArgsReturnsError() {
 	os.Args = []string{}
-	_, _, _, err := t.parser.Parse()
+	err := t.parser.Validate()
 	t.Error(err)
 }
 
 func (t *argsTestSuite) TestArgsReturnedWithDefaultSeparator() {
 	os.Args = []string{"1", "./fixtures/testfile.csv", testTableName}
-	fileName, separator, tableName, err := t.parser.Parse()
+	separator := t.parser.Separator()
 
-	t.NoError(err)
-	t.Equal("./fixtures/testfile.csv", fileName)
-	t.Equal(testTableName, tableName)
 	t.Equal(',', separator)
 }
 
 func (t *argsTestSuite) TestArgsReturnedWithCustomSeparator() {
 	os.Args = []string{"1", "./fixtures/testfile.csv", testTableName, ";"}
-	fileName, separator, tableName, err := t.parser.Parse()
+	separator := t.parser.Separator()
 
-	t.NoError(err)
-	t.Equal("./fixtures/testfile.csv", fileName)
-	t.Equal(testTableName, tableName)
 	t.Equal(';', separator)
 }
 
 func (t *argsTestSuite) TestFileNotExistsReturnsError() {
 	os.Args = []string{"1", "testfile-missing.csv", testTableName, ";"}
-	_, _, _, err := t.parser.Parse()
+	err := t.parser.Validate()
 
 	t.Error(err)
+}
+
+func (t *argsTestSuite) TestValidationErrorIfSeparatorIsTooLong() {
+	os.Args = []string{"1", "./fixtures/testfile.csv", testTableName, "long"}
+	err := t.parser.Validate()
+
+	t.Error(err)
+}
+
+func (t *argsTestSuite) TestFlags() {
+	os.Args = []string{"1", "./fixtures/testfile.csv", testTableName, ";", "-flag1=hasValue1", "-flagNoValue1=", "-flagNoValue2", "-flag2=hasValue2"}
+
+	_, err := t.parser.Flag("missing")
+	t.Error(err)
+
+	result, err := t.parser.Flag("flag1")
+	t.Nil(err)
+	t.Equal("hasValue1", result)
+
+	result, err = t.parser.Flag("flagNoValue1")
+	t.Nil(err)
+	t.Equal("", result)
+
+	result, err = t.parser.Flag("flagNoValue2")
+	t.Nil(err)
+	t.Equal("", result)
+
+	result, err = t.parser.Flag("flag2")
+	t.Nil(err)
+	t.Equal("hasValue2", result)
 }

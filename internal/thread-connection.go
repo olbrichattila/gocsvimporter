@@ -1,6 +1,10 @@
 package importer
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/olbrichattila/gocsvimporter/internal/storage"
+)
 
 type threadConnection struct {
 	db *sql.DB
@@ -9,7 +13,7 @@ type threadConnection struct {
 
 type threadConnections []*threadConnection
 
-func (t *threadConnection) getExecutor() sQLExecutor {
+func (t *threadConnection) getExecutor() storage.SQLExecutor {
 	if t.tx != nil {
 		return t.tx
 	}

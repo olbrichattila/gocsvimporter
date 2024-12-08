@@ -11,6 +11,18 @@ func newMockArgParser() arg.Parser {
 	return &mockParser{}
 }
 
-func (*mockParser) Parse() (string, rune, string, error) {
-	return "./fixtures/testfile.csv", ',', testTableName, nil
+func (*mockParser) Validate() error {
+	return nil
+}
+
+func (*mockParser) FileName() string {
+	return "./fixtures/testfile.csv"
+}
+
+func (*mockParser) TableName() string {
+	return testTableName
+}
+
+func (*mockParser) Separator() rune {
+	return ','
 }

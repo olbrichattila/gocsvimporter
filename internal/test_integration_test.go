@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	database "github.com/olbrichattila/gocsvimporter/internal/db"
+	"github.com/olbrichattila/gocsvimporter/internal/storage"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -56,8 +57,7 @@ func (t *integrationTestSuite) SetupTest() {
 	}
 
 	t.dBConfig = dBConfig
-	// TODO fix when getters are done
-	_, _, _, err = mockArgParser.Parse()
+	err = mockArgParser.Validate()
 	t.NoError(err)
 
 	t.importer = newImporter(
@@ -67,7 +67,7 @@ func (t *integrationTestSuite) SetupTest() {
 			dBConfig,
 			mockArgParser,
 		),
-		newStorager(dBConfig),
+		storage.New(dBConfig),
 	)
 }
 
@@ -131,7 +131,7 @@ func (t *integrationTestSuite) reConnect() (*sql.DB, error) {
 }
 
 func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStructs, error) {
-	_, _, tableName, _ := newMockArgParser().Parse()
+	tableName := newMockArgParser().TableName()
 	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
@@ -159,7 +159,7 @@ func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStructs, erro
 }
 
 func (t *integrationTestSuite) fetchAll(database *sql.DB) (records, error) {
-	_, _, tableName, _ := newMockArgParser().Parse()
+	tableName := newMockArgParser().TableName()
 	query := fmt.Sprintf("SELECT fieldvarchar, fieldint, fieldfloat, fieldbool FROM 	%s", tableName)
 	rows, err := database.Query(query)
 	if err != nil {

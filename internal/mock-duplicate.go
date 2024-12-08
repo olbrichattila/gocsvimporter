@@ -9,6 +9,18 @@ func newDuplicateMockArgParser() arg.Parser {
 	return &duplicateMockParser{}
 }
 
-func (*duplicateMockParser) Parse() (string, rune, string, error) {
-	return "./fixtures/duplicate_testfile.csv", ',', testTableName, nil
+func (*duplicateMockParser) Validate() error {
+	return nil
+}
+
+func (*duplicateMockParser) FileName() string {
+	return "./fixtures/duplicate_testfile.csv"
+}
+
+func (*duplicateMockParser) TableName() string {
+	return testTableName
+}
+
+func (*duplicateMockParser) Separator() rune {
+	return ','
 }

@@ -37,11 +37,9 @@ type fieldDef struct {
 type fieldDefs = []fieldDef
 
 func newCsvReader(parser arg.Parser) csvReader {
-	// TODO refactor it to getters when it's done
-	fileName, separator, _, _ := parser.Parse()
 	return &readCsv{
-		fileName:  fileName,
-		separator: separator,
+		fileName:  parser.FileName(),
+		separator: parser.Separator(),
 	}
 }
 

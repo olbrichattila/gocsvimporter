@@ -41,5 +41,11 @@ func main() {
 	}
 	arg := arg.New()
 
+	err = arg.Validate()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	importer.Import(env, dBConfig, arg)
 }
