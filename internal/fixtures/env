@@ -1,0 +1,7 @@
+DB_CONNECTION=conection
+DB_HOST=host
+DB_PORT=port
+DB_DATABASE=db
+DB_USERNAME=usenName
+DB_PASSWORD=password
+DB_SSLMODE=sslmode
