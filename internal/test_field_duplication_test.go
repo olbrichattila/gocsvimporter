@@ -6,6 +6,7 @@ import (
 	"log"
 	"testing"
 
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -32,8 +33,8 @@ type duplicateRecords = []duplicateRecord
 
 type duplicationTestSuite struct {
 	suite.Suite
-	app      *application
-	dBconfig dBConfiger
+	importer importer
+	dBConfig database.DBConfiger
 }
 
 func TestDuplicationSuiteRunner(t *testing.T) {
@@ -41,43 +42,38 @@ func TestDuplicationSuiteRunner(t *testing.T) {
 }
 
 func (t *duplicationTestSuite) SetupTest() {
-	err := newEnvMock().loadEnv()
+	err := newEnvMock().LoadEnv()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	dBconfig, err := newDbConfig()
+	duplicateMockArgParser := newDuplicateMockArgParser()
+
+	dBConfig, err := database.New()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	t.dBconfig = dBconfig
-	csvFileName, separator, tableName, err := newDuplicateMockParser().parse()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	app, err := newApplication(
-		newImporter(
-			dBconfig,
-			newCsvReader(csvFileName, separator),
-			newSQLGenerator(
-				dBconfig,
-				tableName,
-			),
-			newStorager(dBconfig),
-		),
-	)
-
+	t.dBConfig = dBConfig
+	// TODO review when getters are done
+	_, _, _, err = duplicateMockArgParser.Parse()
 	t.NoError(err)
-	t.app = app
+
+	t.importer = newImporter(
+		dBConfig,
+		newCsvReader(duplicateMockArgParser),
+		newSQLGenerator(
+			dBConfig,
+			duplicateMockArgParser,
+		),
+		newStorager(dBConfig),
+	)
 }
 
 func (t *duplicationTestSuite) TestImportsCorrectly() {
-	_, _, _, err := t.app.importer.importCsv()
+	_, _, _, err := t.importer.importCsv()
 	t.NoError(err)
 
 	db, err := t.reConnect()
@@ -108,7 +104,7 @@ func (t *duplicationTestSuite) TestImportsCorrectly() {
 	t.Equal("TINYINT(1)", fieldNames[4].ctype)
 
 	// Act
-	rows, err := t.fetcAll(db)
+	rows, err := t.fetchAll(db)
 	t.NoError(err)
 	t.Len(rows, 4)
 
@@ -140,11 +136,11 @@ func (t *duplicationTestSuite) TestImportsCorrectly() {
 }
 
 func (t *duplicationTestSuite) reConnect() (*sql.DB, error) {
-	return t.dBconfig.getNewConnection()
+	return t.dBConfig.GetNewConnection()
 }
 
 func (t *duplicationTestSuite) fieldNames(database *sql.DB) (duplicateFieldsStucts, error) {
-	_, _, tableName, _ := newDuplicateMockParser().parse()
+	_, _, tableName, _ := newDuplicateMockArgParser().Parse()
 	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
@@ -171,8 +167,8 @@ func (t *duplicationTestSuite) fieldNames(database *sql.DB) (duplicateFieldsStuc
 	return fStructs, nil
 }
 
-func (t *duplicationTestSuite) fetcAll(database *sql.DB) (duplicateRecords, error) {
-	_, _, tableName, _ := newDuplicateMockParser().parse()
+func (t *duplicationTestSuite) fetchAll(database *sql.DB) (duplicateRecords, error) {
+	_, _, tableName, _ := newDuplicateMockArgParser().Parse()
 	query := fmt.Sprintf("SELECT field1,field,field2,field_1,field_2 FROM %s", tableName)
 	rows, err := database.Query(query)
 	if err != nil {

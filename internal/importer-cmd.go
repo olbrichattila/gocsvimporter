@@ -3,53 +3,53 @@ package importer
 
 import (
 	"fmt"
+	"math"
+
+	"github.com/olbrichattila/gocsvimporter/internal/arg"
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
+	"github.com/olbrichattila/gocsvimporter/internal/env"
 )
 
 // Import process the file
-func Import() {
-	err := newEnv(envFileName).loadEnv()
+func Import(env env.Enver, dbConfig database.DBConfiger, argParser arg.Parser) {
+
+	// TODO replace it to validate
+	_, _, _, err := argParser.Parse()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	dBconfig, err := newDbConfig()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	fmt.Println("Analyzing CSV...")
 
-	csvFileName, separator, tableName, err := newArgParser().parse()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("Analising CSV...")
-
-	app, err := newApplication(
-		newImporter(
-			dBconfig,
-			newCsvReader(csvFileName, separator),
-			newSQLGenerator(
-				dBconfig,
-				tableName,
-			),
-			newStorager(dBconfig),
+	importer := newImporter(
+		dbConfig,
+		newCsvReader(argParser),
+		newSQLGenerator(
+			dbConfig,
+			argParser,
 		),
+		newStorager(dbConfig),
 	)
 
+	phraseTime, importTime, totalTime, err := importer.importCsv()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	phraseTime, importTime, totalTime, err := app.importer.importCsv()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	displayTimeStat(phraseTime, importTime, totalTime)
+}
 
-	// TODO: tests stats, time may not be correctly displayed
-	app.displayTimeStat(phraseTime, importTime, totalTime)
+func displayTimeStat(analysisTime, importTime, totalTime float64) {
+	fmt.Printf(
+		"\n\nFull Analysis time: %s\nFull duration time: %s\nTotal: %s\n",
+		durationAsString(analysisTime),
+		durationAsString(importTime),
+		durationAsString(totalTime),
+	)
+}
+
+func durationAsString(elapsed float64) string {
+	return fmt.Sprintf("%.0f minutes %d seconds", math.Floor(elapsed/60), int64(elapsed)%60)
 }

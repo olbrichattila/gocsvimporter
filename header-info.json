@@ -1,0 +1,422 @@
+[
+ {
+  "name": "make",
+  "Type": "VARCHAR",
+  "Length": 34
+ },
+ {
+  "name": "model",
+  "Type": "VARCHAR",
+  "Length": 47
+ },
+ {
+  "name": "annual_petroleum_consumption_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 19
+ },
+ {
+  "name": "annual_petroleum_consumption_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 19
+ },
+ {
+  "name": "time_to_charge_at_a120v",
+  "Type": "FLOAT",
+  "Length": 3
+ },
+ {
+  "name": "time_to_charge_at_a240v",
+  "Type": "FLOAT",
+  "Length": 5
+ },
+ {
+  "name": "city_mpg_for_fuel_type1",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "unrounded_city_mpg_for_fuel_type1_a2",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "city_mpg_for_fuel_type2",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "unrounded_city_mpg_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "city_gasoline_consumption",
+  "Type": "FLOAT",
+  "Length": 6
+ },
+ {
+  "name": "city_electricity_consumption",
+  "Type": "FLOAT",
+  "Length": 7
+ },
+ {
+  "name": "epa_city_utility_factor",
+  "Type": "FLOAT",
+  "Length": 6
+ },
+ {
+  "name": "co2_fuel_type1",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "co2_fuel_type2",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "co2_tailpipe_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 18
+ },
+ {
+  "name": "co2_tailpipe_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 18
+ },
+ {
+  "name": "combined_mpg_for_fuel_type1",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "unrounded_combined_mpg_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "combined_mpg_for_fuel_type2",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "unrounded_combined_mpg_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "combined_electricity_consumption",
+  "Type": "FLOAT",
+  "Length": 7
+ },
+ {
+  "name": "combined_gasoline_consumption",
+  "Type": "FLOAT",
+  "Length": 6
+ },
+ {
+  "name": "epa_combined_utility_factor",
+  "Type": "FLOAT",
+  "Length": 6
+ },
+ {
+  "name": "cylinders",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "engine_displacement",
+  "Type": "FLOAT",
+  "Length": 3
+ },
+ {
+  "name": "drive",
+  "Type": "VARCHAR",
+  "Length": 26
+ },
+ {
+  "name": "epa_model_type_index",
+  "Type": "INT",
+  "Length": 5
+ },
+ {
+  "name": "engine_descriptor",
+  "Type": "VARCHAR",
+  "Length": 46
+ },
+ {
+  "name": "epa_fuel_economy_score",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "annual_fuel_cost_for_fuel_type1",
+  "Type": "INT",
+  "Length": 4
+ },
+ {
+  "name": "annual_fuel_cost_for_fuel_type2",
+  "Type": "INT",
+  "Length": 4
+ },
+ {
+  "name": "fuel_type",
+  "Type": "VARCHAR",
+  "Length": 27
+ },
+ {
+  "name": "fuel_type1",
+  "Type": "VARCHAR",
+  "Length": 17
+ },
+ {
+  "name": "ghg_score",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "ghg_score_alternative_fuel",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "highway_mpg_for_fuel_type1",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "unrounded_highway_mpg_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "highway_mpg_for_fuel_type2",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "unrounded_highway_mpg_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "highway_gasoline_consumption",
+  "Type": "FLOAT",
+  "Length": 6
+ },
+ {
+  "name": "highway_electricity_consumption",
+  "Type": "FLOAT",
+  "Length": 7
+ },
+ {
+  "name": "epa_highway_utility_factor",
+  "Type": "FLOAT",
+  "Length": 6
+ },
+ {
+  "name": "hatchback_luggage_volume",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "hatchback_passenger_volume",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "id",
+  "Type": "INT",
+  "Length": 5
+ },
+ {
+  "name": "a2_door_luggage_volume",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "a4_door_luggage_volume",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "mpg_data",
+  "Type": "VARCHAR",
+  "Length": 1
+ },
+ {
+  "name": "phev_blended",
+  "Type": "VARCHAR",
+  "Length": 5
+ },
+ {
+  "name": "a2door_passenger_volume",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "a4door_passenger_volume",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "range_for_fuel_type1",
+  "Type": "INT",
+  "Length": 3
+ },
+ {
+  "name": "range_city_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "range_city_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 7
+ },
+ {
+  "name": "range_highway_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "range_highway_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 7
+ },
+ {
+  "name": "transmission",
+  "Type": "VARCHAR",
+  "Length": 32
+ },
+ {
+  "name": "unadjusted_city_mpg_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "unadjusted_city_mpg_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "unadjusted_highway_mpg_for_fuel_type1",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "unadjusted_highway_mpg_for_fuel_type2",
+  "Type": "FLOAT",
+  "Length": 8
+ },
+ {
+  "name": "vehicle_size_class",
+  "Type": "VARCHAR",
+  "Length": 34
+ },
+ {
+  "name": "year",
+  "Type": "INT",
+  "Length": 4
+ },
+ {
+  "name": "you_savespend",
+  "Type": "INT",
+  "Length": 6
+ },
+ {
+  "name": "guzzler",
+  "Type": "VARCHAR",
+  "Length": 1
+ },
+ {
+  "name": "transmission_descriptor",
+  "Type": "VARCHAR",
+  "Length": 15
+ },
+ {
+  "name": "t_charger",
+  "Type": "VARCHAR",
+  "Length": 1
+ },
+ {
+  "name": "s_charger",
+  "Type": "VARCHAR",
+  "Length": 1
+ },
+ {
+  "name": "atv_type",
+  "Type": "VARCHAR",
+  "Length": 14
+ },
+ {
+  "name": "fuel_type2",
+  "Type": "VARCHAR",
+  "Length": 11
+ },
+ {
+  "name": "epa_range_for_fuel_type2",
+  "Type": "VARCHAR",
+  "Length": 11
+ },
+ {
+  "name": "electric_motor",
+  "Type": "VARCHAR",
+  "Length": 51
+ },
+ {
+  "name": "mfr_code",
+  "Type": "VARCHAR",
+  "Length": 3
+ },
+ {
+  "name": "c240dscr",
+  "Type": "VARCHAR",
+  "Length": 16
+ },
+ {
+  "name": "charge240b",
+  "Type": "FLOAT",
+  "Length": 4
+ },
+ {
+  "name": "c240b_dscr",
+  "Type": "VARCHAR",
+  "Length": 44
+ },
+ {
+  "name": "created_on",
+  "Type": "VARCHAR",
+  "Length": 10
+ },
+ {
+  "name": "modified_on",
+  "Type": "VARCHAR",
+  "Length": 10
+ },
+ {
+  "name": "startstop",
+  "Type": "VARCHAR",
+  "Length": 1
+ },
+ {
+  "name": "phev_city",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "phev_highway",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "phev_combined",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "basemodel",
+  "Type": "VARCHAR",
+  "Length": 39
+ }
+]

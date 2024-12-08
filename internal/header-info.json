@@ -1,0 +1,22 @@
+[
+ {
+  "name": "fieldvarchar",
+  "Type": "VARCHAR",
+  "Length": 15
+ },
+ {
+  "name": "fieldint",
+  "Type": "INT",
+  "Length": 2
+ },
+ {
+  "name": "fieldfloat",
+  "Type": "FLOAT",
+  "Length": 3
+ },
+ {
+  "name": "fieldbool",
+  "Type": "TINYINT(1)",
+  "Length": 1
+ }
+]

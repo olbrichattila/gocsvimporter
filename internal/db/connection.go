@@ -1,4 +1,4 @@
-package importer
+package database
 
 import (
 	"database/sql"

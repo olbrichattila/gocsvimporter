@@ -1,6 +1,10 @@
 package importer
 
-import "database/sql"
+import (
+	"database/sql"
+
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
+)
 
 type sQLExecutor interface {
 	Prepare(string) (*sql.Stmt, error)
@@ -12,12 +16,12 @@ type storager interface {
 }
 
 type store struct {
-	dBconf dBConfiger
+	dBConf database.DBConfiger
 }
 
-func newStorager(dBconf dBConfiger) storager {
+func newStorager(dBconf database.DBConfiger) storager {
 	return &store{
-		dBconf: dBconf,
+		dBConf: dBconf,
 	}
 }
 

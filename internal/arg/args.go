@@ -1,22 +1,25 @@
-package importer
+// Package Arg parser parses command line arguments
+package arg
 
 import (
 	"fmt"
 	"os"
 )
 
-type argParser interface {
-	parse() (string, rune, string, error)
+// Parser is the interface to abstract argument parser
+type Parser interface {
+	Parse() (string, rune, string, error)
 }
 
 type parseArgs struct {
 }
 
-func newArgParser() argParser {
+// New creates a new parser
+func New() Parser {
 	return &parseArgs{}
 }
 
-func (*parseArgs) parse() (string, rune, string, error) {
+func (*parseArgs) Parse() (string, rune, string, error) {
 	separator := ','
 	argLen := len(os.Args)
 	if argLen < 3 {

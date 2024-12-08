@@ -3,9 +3,17 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	importer "github.com/olbrichattila/gocsvimporter/internal"
+	"github.com/olbrichattila/gocsvimporter/internal/arg"
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
+	"github.com/olbrichattila/gocsvimporter/internal/env"
+)
+
+const (
+	envFileName = ".env.csvimporter"
 )
 
 func main() {
@@ -19,5 +27,19 @@ func main() {
 		displayHelp()
 		os.Exit(0)
 	}
-	importer.Import()
+
+	env := env.New(envFileName)
+	err := env.LoadEnv()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	dBConfig, err := database.New()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	arg := arg.New()
+
+	importer.Import(env, dBConfig, arg)
 }

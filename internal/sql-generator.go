@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/olbrichattila/gocsvimporter/internal/arg"
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
 )
 
 type sQLGenerator interface {
@@ -14,7 +17,7 @@ type sQLGenerator interface {
 }
 
 type sQLgen struct {
-	databaseConfig       dBConfiger
+	databaseConfig       database.DBConfiger
 	bindingChar          string
 	tableName            string
 	quote                string
@@ -24,12 +27,14 @@ type sQLgen struct {
 	fieldCount           int
 }
 
-func newSQLGenerator(dBConfig dBConfiger, tableName string) sQLGenerator {
+func newSQLGenerator(dBConfig database.DBConfiger, parser arg.Parser) sQLGenerator {
+	// TODO replace it t getters when done
+	_, _, tableName, _ := parser.Parse()
 	return &sQLgen{
 		databaseConfig: dBConfig,
 		tableName:      tableName,
-		quote:          dBConfig.getFieldQuote(),
-		bindingChar:    dBConfig.getBinding(),
+		quote:          dBConfig.GetFieldQuote(),
+		bindingChar:    dBConfig.GetBinding(),
 	}
 }
 
@@ -113,5 +118,5 @@ func (g *sQLgen) getBatchBindings(dataLen, fieldsLen int) string {
 }
 
 func (g *sQLgen) getDropTableSQL() string {
-	return g.databaseConfig.getDropTableString(g.tableName)
+	return g.databaseConfig.GetDropTableString(g.tableName)
 }

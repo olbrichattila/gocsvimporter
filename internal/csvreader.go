@@ -2,6 +2,7 @@ package importer
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/olbrichattila/gocsvimporter/internal/arg"
 )
 
 const (
@@ -25,7 +28,17 @@ var dbFieldMap = map[int]string{
 	4: "VARCHAR",
 }
 
-func newCsvReader(fileName string, separator rune) csvReader {
+type fieldDef struct {
+	Name   string `json:"name"`
+	Type   string `type:"name"`
+	Length int    `length:"name2"`
+}
+
+type fieldDefs = []fieldDef
+
+func newCsvReader(parser arg.Parser) csvReader {
+	// TODO refactor it to getters when it's done
+	fileName, separator, _, _ := parser.Parse()
 	return &readCsv{
 		fileName:  fileName,
 		separator: separator,
@@ -122,7 +135,18 @@ func (r *readCsv) init() error {
 	reader.Comma = r.separator
 	r.reader = reader
 
+	// err = r.loadHeaders()
+	// if err != nil {
+	// 	return err
+	// }
+
 	err = r.setHeader()
+	if err != nil {
+		return err
+	}
+
+	// TODO save only if flag set
+	err = r.saveHeaders()
 	if err != nil {
 		return err
 	}
@@ -141,6 +165,7 @@ func (r *readCsv) setHeader() error {
 
 	err = r.fillLengths()
 	if err != nil {
+
 		return err
 	}
 
@@ -289,4 +314,77 @@ func (*readCsv) normalizeFieldName(str string) string {
 	}
 
 	return strings.Join(np, "_")
+}
+
+func (r *readCsv) saveHeaders() error {
+	aggregatedFieldDefs := make(fieldDefs, 0)
+	for i, typeID := range r.types {
+		aggregatedFieldDefs = append(
+			aggregatedFieldDefs,
+			fieldDef{
+				Type:   dbFieldMap[typeID],
+				Name:   r.headers[i],
+				Length: r.lengths[i],
+			},
+		)
+
+	}
+
+	jsonData, _ := json.MarshalIndent(aggregatedFieldDefs, "", " ")
+	file, err := os.Create("header-info.json")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write the string to the file
+	_, err = file.Write(jsonData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *readCsv) loadHeaders() error {
+	data, err := os.ReadFile("header-info.json")
+	if err != nil {
+		return err
+	}
+
+	var aggregatedFieldDefs fieldDefs
+	err = json.Unmarshal(data, &aggregatedFieldDefs)
+	if err != nil {
+		return err
+	}
+
+	r.headerLen = len(aggregatedFieldDefs)
+
+	r.types = make([]int, r.headerLen)
+	r.lengths = make([]int, r.headerLen)
+	r.headers = make([]string, r.headerLen)
+
+	for i, fDef := range aggregatedFieldDefs {
+		r.lengths[i] = fDef.Length
+		r.headers[i] = fDef.Name
+		fieldType, err := r.getFieldTypeByName(fDef.Type)
+		if err != nil {
+			return err
+		}
+
+		r.types[i] = fieldType
+	}
+
+	r.totalRowCount = -1
+	return nil
+}
+
+func (*readCsv) getFieldTypeByName(name string) (int, error) {
+	for key, value := range dbFieldMap {
+		if value == name {
+			return key, nil
+		}
+	}
+
+	return 0, fmt.Errorf("cannot find field " + name)
 }

@@ -7,23 +7,27 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
+	"github.com/olbrichattila/gocsvimporter/internal/env"
 )
 
 const (
 	defaultBatchSize       = 100
 	defaultNumberOfThreads = 10
+	progressRefreshCount   = 1000
 )
 
 type batch = [][]any
 
 func newImporter(
-	dBconfig dBConfiger,
+	dBConfig database.DBConfiger,
 	csv csvReader,
 	sQLGen sQLGenerator,
 	storer storager,
 ) importer {
 	return &imp{
-		dBconfig: dBconfig,
+		dBConfig: dBConfig,
 		csv:      csv,
 		sQLGen:   sQLGen,
 		storer:   storer,
@@ -35,7 +39,7 @@ type importer interface {
 }
 
 type imp struct {
-	dBconfig    dBConfiger
+	dBConfig    database.DBConfiger
 	csv         csvReader
 	sQLGen      sQLGenerator
 	storer      storager
@@ -47,13 +51,13 @@ type imp struct {
 
 func (i *imp) importCsv() (float64, float64, float64, error) {
 	startedAt := time.Now()
-	isTransactional, haveMultipleThreads, haveBatchInsert, connectionCount, err := i.init()
+	isTransactional, HaveMultipleThreads, HaveBatchInsert, connectionCount, err := i.init()
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	defer i.csv.close()
-	batchSize := i.getIntEnv(envBatchSize, defaultBatchSize)
-	if i.dBconfig.haveBatchInsert() {
+	batchSize := i.getIntEnv(env.BatchSize, defaultBatchSize)
+	if i.dBConfig.HaveBatchInsert() {
 		fmt.Printf("Batch size is %d\n", batchSize)
 	}
 
@@ -80,8 +84,8 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 	for i.csv.next() {
 		i.showProgress(locks)
 
-		if !haveBatchInsert {
-			if haveMultipleThreads {
+		if !HaveBatchInsert {
+			if HaveMultipleThreads {
 				connectionID = locks.getNextUnlockedID()
 				locks.getLockerByID(connectionID).lock()
 				go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, i.csv.row()...)
@@ -96,7 +100,7 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		if batchIndex == batchSize {
 			insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchData, true)
 
-			if haveMultipleThreads {
+			if HaveMultipleThreads {
 				connectionID = locks.getNextUnlockedID()
 				locks.getLockerByID(connectionID).lock()
 				go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, bindingPars...)
@@ -112,9 +116,9 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		batchIndex++
 	}
 
-	if haveBatchInsert {
+	if HaveBatchInsert {
 		insertSQL, bindingPars := i.sQLGen.createBatchInsertSQL(batchData, false)
-		if haveMultipleThreads {
+		if HaveMultipleThreads {
 			connectionID = locks.getNextUnlockedID()
 			locks.getLockerByID(connectionID).lock()
 			go i.executeBatchInThread(locks.getLockerByID(connectionID), i.connections[connectionID], insertSQL, bindingPars...)
@@ -123,7 +127,7 @@ func (i *imp) importCsv() (float64, float64, float64, error) {
 		}
 	}
 
-	if haveMultipleThreads {
+	if HaveMultipleThreads {
 		locks.waitAll()
 	}
 
@@ -142,8 +146,8 @@ func (i *imp) init() (bool, bool, bool, int, error) {
 		return false, false, false, 0, err
 	}
 
-	isTransactional, haveMultipleTheads, haveBatchInsert, connectionCount := i.initConfig()
-	return isTransactional, haveMultipleTheads, haveBatchInsert, connectionCount, nil
+	isTransactional, HaveMultipleThreads, HaveBatchInsert, connectionCount := i.initConfig()
+	return isTransactional, HaveMultipleThreads, HaveBatchInsert, connectionCount, nil
 }
 
 func (i *imp) initCsv() error {
@@ -158,24 +162,24 @@ func (i *imp) initCsv() error {
 }
 
 func (i *imp) initConfig() (bool, bool, bool, int) {
-	isTransactional := i.dBconfig.needTransactions()
+	isTransactional := i.dBConfig.NeedTransactions()
 	if isTransactional {
 		fmt.Println("Running in transactional mode")
 	}
 
-	haveMultipleTheads := i.dBconfig.haveMultipleThreads()
+	HaveMultipleThreads := i.dBConfig.HaveMultipleThreads()
 	connectionCount := 1
-	if haveMultipleTheads {
+	if HaveMultipleThreads {
 		fmt.Println("Running in multiple threads mode")
-		connectionCount = i.getIntEnv(envMaxConnectionCount, defaultNumberOfThreads)
+		connectionCount = i.getIntEnv(env.MaxConnectionCount, defaultNumberOfThreads)
 	}
 
-	haveBatchInsert := i.dBconfig.haveBatchInsert()
-	if haveBatchInsert {
+	HaveBatchInsert := i.dBConfig.HaveBatchInsert()
+	if HaveBatchInsert {
 		fmt.Println("Running in batch insert mode")
 	}
 
-	return isTransactional, haveMultipleTheads, haveBatchInsert, connectionCount
+	return isTransactional, HaveMultipleThreads, HaveBatchInsert, connectionCount
 }
 
 func (i *imp) getIntEnv(key string, defaultValue int) int {
@@ -210,9 +214,8 @@ func (i *imp) createTable(db *sql.DB) error {
 func (i *imp) createConnections(count int, isTransactional bool) error {
 	i.connections = make(threadConnections, count)
 	for x := range i.connections {
-		conn, err := i.dBconfig.getNewConnection()
+		conn, err := i.dBConfig.GetNewConnection()
 		if err != nil {
-			fmt.Println(err)
 			i.closeConnections()
 			return err
 		}
@@ -220,7 +223,6 @@ func (i *imp) createConnections(count int, isTransactional bool) error {
 		if isTransactional {
 			tx, err = conn.Begin()
 			if err != nil {
-				fmt.Println(err)
 				i.closeConnections()
 				return err
 			}
@@ -270,11 +272,25 @@ func (i *imp) resetProgress() {
 
 func (i *imp) showProgress(locks *lockers) {
 	i.rowNr++
+	if i.rowCount < 0 {
+		i.showSimpleProgress(locks)
+		return
+	}
+
+	i.showFullProgress(locks)
+}
+
+func (i *imp) showFullProgress(locks *lockers) {
 	percent := int(math.Ceil(float64(i.rowNr) / float64(i.rowCount) * 100))
 	if percent != i.progress {
 		i.progress = percent
-		activeTreads := locks.getActiveThreadReport()
-		fmt.Printf("\rImporting: %d%% Active threads: [%s] ", i.progress, activeTreads)
+		fmt.Printf("\rImporting: %d%% Active threads: [%s] ", i.progress, locks.getActiveThreadReport())
+	}
+}
+
+func (i *imp) showSimpleProgress(locks *lockers) {
+	if i.rowNr%progressRefreshCount == 0 {
+		fmt.Printf("\rImporting in progress... Active threads: [%s] ", locks.getActiveThreadReport())
 	}
 }
 

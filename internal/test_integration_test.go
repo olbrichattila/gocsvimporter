@@ -6,6 +6,7 @@ import (
 	"log"
 	"testing"
 
+	database "github.com/olbrichattila/gocsvimporter/internal/db"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -18,7 +19,7 @@ type fieldStruct struct {
 	pk        int
 }
 
-type fieldsStucts []fieldStruct
+type fieldsStructs []fieldStruct
 
 type record struct {
 	fieldvarchar string
@@ -31,8 +32,8 @@ type records = []record
 
 type integrationTestSuite struct {
 	suite.Suite
-	app      *application
-	dBconfig dBConfiger
+	importer importer
+	dBConfig database.DBConfiger
 }
 
 func TestIntegrationRunner(t *testing.T) {
@@ -40,44 +41,38 @@ func TestIntegrationRunner(t *testing.T) {
 }
 
 func (t *integrationTestSuite) SetupTest() {
-
-	err := newEnvMock().loadEnv()
+	err := newEnvMock().LoadEnv()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	dBconfig, err := newDbConfig()
+	mockArgParser := newMockArgParser()
+
+	dBConfig, err := database.New()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	t.dBconfig = dBconfig
-	csvFileName, separator, tableName, err := newMockParser().parse()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	app, err := newApplication(
-		newImporter(
-			dBconfig,
-			newCsvReader(csvFileName, separator),
-			newSQLGenerator(
-				dBconfig,
-				tableName,
-			),
-			newStorager(dBconfig),
-		),
-	)
-
+	t.dBConfig = dBConfig
+	// TODO fix when getters are done
+	_, _, _, err = mockArgParser.Parse()
 	t.NoError(err)
-	t.app = app
+
+	t.importer = newImporter(
+		dBConfig,
+		newCsvReader(mockArgParser),
+		newSQLGenerator(
+			dBConfig,
+			mockArgParser,
+		),
+		newStorager(dBConfig),
+	)
 }
 
 func (t *integrationTestSuite) TestImportsCorrectly() {
-	_, _, _, err := t.app.importer.importCsv()
+	_, _, _, err := t.importer.importCsv()
 	t.NoError(err)
 
 	db, err := t.reConnect()
@@ -105,7 +100,7 @@ func (t *integrationTestSuite) TestImportsCorrectly() {
 	t.Equal("TINYINT(1)", fieldNames[3].ctype)
 
 	// Act
-	rows, err := t.fetcAll(db)
+	rows, err := t.fetchAll(db)
 	t.NoError(err)
 	t.Len(rows, 4)
 
@@ -132,18 +127,18 @@ func (t *integrationTestSuite) TestImportsCorrectly() {
 }
 
 func (t *integrationTestSuite) reConnect() (*sql.DB, error) {
-	return t.dBconfig.getNewConnection()
+	return t.dBConfig.GetNewConnection()
 }
 
-func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error) {
-	_, _, tableName, _ := newMockParser().parse()
+func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStructs, error) {
+	_, _, tableName, _ := newMockArgParser().Parse()
 	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	var fStructs fieldsStucts
+	var fStructs fieldsStructs
 
 	for rows.Next() {
 		var fStruct fieldStruct
@@ -163,8 +158,8 @@ func (t *integrationTestSuite) fieldNames(database *sql.DB) (fieldsStucts, error
 	return fStructs, nil
 }
 
-func (t *integrationTestSuite) fetcAll(database *sql.DB) (records, error) {
-	_, _, tableName, _ := newMockParser().parse()
+func (t *integrationTestSuite) fetchAll(database *sql.DB) (records, error) {
+	_, _, tableName, _ := newMockArgParser().Parse()
 	query := fmt.Sprintf("SELECT fieldvarchar, fieldint, fieldfloat, fieldbool FROM 	%s", tableName)
 	rows, err := database.Query(query)
 	if err != nil {
