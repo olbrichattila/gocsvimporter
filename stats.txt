@@ -1,0 +1,221 @@
+SqLite
+
+no transaction no batch insert
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 19 seconds
+Full duration time: 120 minutes 30 seconds
+Total: 120 minutes 49 seconds
+
+-------
+
+no transaction, batch insert
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in batch insert mode
+Batch size is 100
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 18 seconds
+Full duration time: 1 minutes 33 seconds
+Total: 1 minutes 52 seconds
+
+----
+
+Transaction + Batch insert:
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in batch insert mode
+Batch size is 100
+1 Connection opened
+1 Transaction started
+Importing: 100% Active threads: [ ] 
+Done
+1 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 14 seconds
+Full duration time: 0 minutes 30 seconds
+Total: 0 minutes 44 seconds
+
+MYSQL
+
+Batch OFF, Transaction OFF, Multi Connection OFF
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 18 seconds
+Full duration time: 117 minutes 8 seconds
+Total: 117 minutes 26 seconds
+
+----
+
+Batch ON, Transaction OFF, Multi Connection OFF
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in batch insert mode
+Batch size is 500
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 19 seconds
+Full duration time: 1 minutes 19 seconds
+Total: 1 minutes 39 seconds
+
+----
+
+Batch ON, Transaction ON, Multi Connection OFF
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in batch insert mode
+Batch size is 500
+1 Connection opened
+1 Transaction started
+Importing: 100% Active threads: [ ] 
+Done
+1 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 18 seconds
+Full duration time: 1 minutes 1 seconds
+Total: 1 minutes 20 seconds
+
+---
+
+Batch ON, Transaction ON, Multi Connection ON
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in multiple threads mode
+Running in batch insert mode
+Batch size is 500
+25 Connection opened
+25 Transaction started
+Importing: 100% Active threads: [OOOOOOOOOOOOOOOOOOOOOOOOO] 
+Done
+25 transactions committed
+25 connections closed
+
+Full Analysis time: 0 minutes 14 seconds
+Full duration time: 0 minutes 38 seconds
+Total: 0 minutes 53 seconds
+
+-----
+Postgres:
+
+Batch OFF, Transaction OFF, Multi Connection OFF
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 18 seconds
+Full duration time: 50 minutes 50 seconds
+Total: 51 minutes 9 seconds
+
+----
+
+Batch ON, Transaction OFF, Multi Connection OFF
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in batch insert mode
+Batch size is 500
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 16 seconds
+Full duration time: 1 minutes 21 seconds
+Total: 1 minutes 38 seconds
+
+---
+
+Batch ON, Transaction ON, Multi Connection OFF
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in batch insert mode
+Batch size is 500
+1 Connection opened
+1 Transaction started
+Importing: 100% Active threads: [ ] 
+Done
+1 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 19 seconds
+Full duration time: 1 minutes 5 seconds
+Total: 1 minutes 25 seconds
+
+---
+
+Batch ON, Transaction ON, Multi Connection OFF
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in multiple threads mode
+Running in batch insert mode
+Batch size is 500
+25 Connection opened
+25 Transaction started
+Importing: 100% Active threads: [OOOOOOOOOOOO             ] 
+Done
+25 transactions committed
+25 connections closed
+
+Full Analysis time: 0 minutes 19 seconds
+Full duration time: 0 minutes 17 seconds
+Total: 0 minutes 36 seconds
