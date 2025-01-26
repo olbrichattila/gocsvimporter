@@ -44,8 +44,7 @@ func (c *sqLiteConfig) GetNewConnection() (*sql.DB, error) {
 }
 
 func (c *sqLiteConfig) HaveBatchInsert() bool {
-	c.isOnByEnv(env.BatchInsert, true)
-	return true
+	return c.isOnByEnv(env.BatchInsert, true)
 }
 
 func (c *sqLiteConfig) HaveMultipleThreads() bool {
