@@ -28,8 +28,6 @@ func (c *connection) isOnByEnv(key string, defaultValue bool) bool {
 		if lowerCaseConfigValue == "off" {
 			return false
 		}
-
-		return defaultValue
 	}
 
 	return defaultValue

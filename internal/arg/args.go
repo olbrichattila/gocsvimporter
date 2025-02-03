@@ -71,7 +71,7 @@ func (t *parseArgs) Flag(name string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("flag " + name + " not provided.")
+	return "", fmt.Errorf("flag %s not provided", name)
 }
 
 func (*parseArgs) getParams() []string {
