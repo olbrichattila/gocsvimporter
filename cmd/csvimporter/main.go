@@ -1,8 +1,9 @@
-// Package main is running the CSV importer supporting large CSV files
+// Package main runs the CSV importer, supporting large CSV files
 package main
 
 import (
 	"fmt"
+	"log"
 
 	importer "github.com/olbrichattila/gocsvimporter/internal"
 	"github.com/olbrichattila/gocsvimporter/internal/arg"
@@ -10,35 +11,58 @@ import (
 	"github.com/olbrichattila/gocsvimporter/internal/env"
 )
 
-const (
-	envFileName = ".env.csvimporter"
-)
+const envFileName = ".env.csvimporter"
 
 func main() {
-	arg := arg.New()
-	_, err := arg.Flag("help")
+	// Parse command-line arguments
+	args := parseArgs()
+
+	// Load environment configuration
+	environment := loadEnvConfig()
+
+	// Set up database connection
+	dbConfig := setupDatabase()
+
+	// Perform CSV import
+	importCSV(environment, dbConfig, args)
+}
+
+func parseArgs() arg.Parser {
+	args := arg.New()
+	if err := displayHelpIfNeeded(args); err != nil {
+		log.Fatal(err)
+	}
+	if err := args.Validate(); err != nil {
+		log.Fatal(err)
+	}
+	return args
+}
+
+func displayHelpIfNeeded(args arg.Parser) error {
+	_, err := args.Flag("help")
 	if err == nil {
 		displayHelp()
-		return
+		return fmt.Errorf("help requested")
 	}
+	return nil
+}
 
-	err = arg.Validate()
+func loadEnvConfig() env.Enver {
+	envConfig := env.New(envFileName)
+	if err := envConfig.LoadEnv(); err != nil {
+		log.Fatal("Error loading environment variables: ", err)
+	}
+	return envConfig
+}
+
+func setupDatabase() database.DBConfiger {
+	dbConfig, err := database.New()
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal("Error setting up database: ", err)
 	}
+	return dbConfig
+}
 
-	env := env.New(envFileName)
-	err = env.LoadEnv()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	dBConfig, err := database.New()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	importer.Import(env, dBConfig, arg)
+func importCSV(environment env.Enver, dbConfig database.DBConfiger, args arg.Parser) {
+	importer.Import(environment, dbConfig, args)
 }

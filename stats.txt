@@ -219,3 +219,61 @@ Done
 Full Analysis time: 0 minutes 19 seconds
 Full duration time: 0 minutes 17 seconds
 Total: 0 minutes 36 seconds
+
+
+---
+Firebird:
+Batch Invalid for this type, Transaction OFF, Multi Connection OFF
+
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+1 Connection opened
+Importing: 100% Active threads: [ ] 
+Done
+0 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 19 seconds
+Full duration time: 115 minutes 54 seconds
+Total: 116 minutes 14 seconds
+
+---
+
+Batch Invalid for this type, Transaction ON, Multi Connection OFF
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+1 Connection opened
+1 Transaction started
+Importing: 100% Active threads: [ ] 
+Done
+1 transactions committed
+1 connections closed
+
+Full Analysis time: 0 minutes 19 seconds
+Full duration time: 35 minutes 35 seconds
+Total: 35 minutes 54 seconds
+
+--- 
+
+Batch Invalid for this type, Transaction ON, Multi Connection opened
+Analyzing CSV...
+Found 12 fields
+Row count:2000000
+
+Running in transactional mode
+Running in multiple threads mode
+25 Connection opened
+25 Transaction started
+Importing: 100% Active threads: [OOOOOOOOOOO OOOOOOOOOOOOO] 
+Done
+25 transactions committed
+25 connections closed
+
+Full Analysis time: 0 minutes 20 seconds
+Full duration time: 3 minutes 59 seconds
+Total: 4 minutes 19 seconds
